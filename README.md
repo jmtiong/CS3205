@@ -6,5 +6,5 @@ This project is to develop a security-focused component subsystem of a prototype
 * A smartphone based interface will be used to access the database, which provides for authentic generation of data, associated with a particular patient.
 
 #### Site Map
-Google docs for consolidating reports:
-* [Link](https://docs.google.com/document/d/16y65qEchEyTmueswAt4quIKI53K9rbf4p2a_EvdSnXY/edit?usp=sharing)
+Google Docs for consolidating documents:
+* [Link](https://drive.google.com/drive/folders/0ByNPMyFeRBvOU2JyU0Y4MTdHYmc?usp=sharing)
