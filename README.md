@@ -1,6 +1,6 @@
 # CS3205
 
-[![Join the chat at https://gitter.im/alittleproject/Lobby](https://badges.gitter.im/alittleproject/Lobby.svg)](https://gitter.im/alittleproject/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![Join the chat: https://gitter.im/CS3205/CS3205Private](https://badges.gitter.im/CS3205/CS3205Private.svg)](https://gitter.im/CS3205/CS3205Private?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 **This project is to develop a security-focused component subsystem of a prototype web/internet based software system for health care, responsible for maintaining, inputting and displaying timestamped health records of various types.**
 
