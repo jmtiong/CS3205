@@ -10,4 +10,4 @@
 
 #### Site Map
 Google Docs for consolidating documents:
-* [Link](https://drive.google.com/drive/folders/0ByNPMyFeRBvOU2JyU0Y4MTdHYmc?usp=sharing)
+* [Link](https://drive.google.com/drive/folders/0BwBeSTZ7ylMeUHNheHJrUE9PejA)
