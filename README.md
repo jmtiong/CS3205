@@ -8,6 +8,9 @@
 * This subsystem is on involving data collection from sensors.
 * A smartphone based interface will be used to access the database, which provides for authentic generation of data, associated with a particular patient.
 
+## About this repository
+This repository is on the web server of subsystem 3.
+
 #### Site Map
 Google Docs for consolidating documents:
 * [Link](https://drive.google.com/drive/folders/0BwBeSTZ7ylMeUHNheHJrUE9PejA)
