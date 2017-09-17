@@ -1,1 +1,2 @@
-bin/*
+WEB-INF/JavaBase/bin/**
+**/*.class
