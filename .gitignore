@@ -1,3 +1,15 @@
-WEB-INF/JavaBase/bin/**
-**/*.class
-/target/
+# OS/tool files
+.DS_Store
+.DS_Store?
+._*
+.swp
+
+# Eclipse
+.settings/
+.classpath
+.project
+
+# Maven
+log/
+target/
+
