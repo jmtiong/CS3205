@@ -1,2 +1,3 @@
 WEB-INF/JavaBase/bin/**
 **/*.class
+/target/
