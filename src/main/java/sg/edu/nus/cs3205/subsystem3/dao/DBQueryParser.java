@@ -16,49 +16,71 @@ public class DBQueryParser {
             String[] orderby) throws SQLException, Exception {
 
         String query = "SELECT ";
-        PreparedStatement ps = DB.getConnection().prepareStatement(query);
         // columns to retrieve
         if (columns != null && columns.length > 0) {
             for (String column : columns) {
-                query += column + ", ";
+                query +=  column + ", " ;
             }
-            // remove the last ,
-            query = new StringBuilder(query).replace(query.lastIndexOf(","), query.lastIndexOf(",") + 1, "").toString();
+            query += "''";
         } else {
             query += "* ";
         }
-        query += "FROM " + table + " ";
+        query += "FROM cs3205." + table + " ";
         // conditions to apply
         if (conditions != null && conditions.length > 0 && variables != null && variables.length > 0
                 && variables.length == conditions.length) {
-            query += "WHERE ";
-            int i = 0;
+            query += "WHERE 1=1 ";
             for (String condition : conditions) {
-                query += condition + ", ";
-                ps = updateVariables(ps, variables[i], i);
-                i++;
+              //condition = (something = ?)
+                query += "AND " + condition;
             }
-            ps.executeUpdate();
-            // remove the last ,
-            query = new StringBuilder(query).replace(query.lastIndexOf(","), query.lastIndexOf(",") + 1, "").toString();
         }
         // order by to apply
         if (orderby != null && orderby.length > 0) {
-            query += "ORDER BY ";
+            query += "ORDER BY '' ";
             for (String order : orderby) {
-                query += order + ", ";
-                // remove the last ,
-                query = new StringBuilder(query).replace(query.lastIndexOf(","), query.lastIndexOf(",") + 1, "")
-                        .toString();
+                query += ", " + order;
             }
         }
         query += ";";
-        ResultSet rs = ps.executeQuery(query);
-        while (rs.next()) {
-            System.out.println("foo: " + rs.getString("foo") + " bar: " + rs.getString("bar"));
+        PreparedStatement ps = DB.getConnection().prepareStatement(query);
+        if(conditions != null && conditions.length > 0 && variables != null && variables.length > 0
+                && variables.length == conditions.length){
+          int i = 0;
+          for (String condition : conditions) {
+              ps = updateVariables(ps, variables[i], i);
+              i++;
+          }
         }
+        ResultSet rs = ps.executeQuery();
         return rs;
     }
+
+
+    /**
+     * Insert a user record into server 3
+     *
+     * @param Object[] values, all the values for the user
+     *
+     * @return int value indicating how many rows are affected, 0 if insert fail.
+     */
+    public static int insertUser(Object[] values){
+      String sql = "INSERT INTO cs3205.USER VALUES (?, ?, ?);";
+      int result = 0;
+      try{
+        PreparedStatement ps = DB.getConnection().prepareStatement(sql);
+        int i = 0;
+        for (Object value : values) {
+            ps = updateVariables(ps, values[i], i);
+            i++;
+        }
+        result = ps.executeUpdate();
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
+      return result;
+    }
+
 
     private static PreparedStatement updateVariables(PreparedStatement ps, Object argObj, int pt)
             throws SQLException, Exception {
