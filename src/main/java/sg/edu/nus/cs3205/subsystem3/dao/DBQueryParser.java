@@ -47,7 +47,7 @@ public class DBQueryParser {
         } else {
             query += "* ";
         }
-        query += "FROM cs3205." + table + " ";
+        query += "FROM CS3205." + table + " ";
         // conditions to apply
         if (conditions != null && conditions.length > 0 && variables != null && variables.length > 0
                 && variables.length == conditions.length) {
@@ -87,7 +87,7 @@ public class DBQueryParser {
      * @return int value indicating how many rows are affected, 0 if insert fail.
      */
     public static int insertUser(Object[] values){
-      String sql = "INSERT INTO cs3205.USER VALUES (?, ?, ?);";
+      String sql = "INSERT INTO CS3205.user VALUES (?, ?, ?);";
       int result = 0;
       try{
         PreparedStatement ps = DB.getConnection().prepareStatement(sql);
