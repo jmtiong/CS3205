@@ -11,7 +11,7 @@ public class DB {
     private static DataSource datasource = null;
     private static Context initContext = null;
     private static Connection conn = null;
-    private static String connectURL = "";
+    private static String connectURL = "java:comp/env/jdbc/TestDB";
 
     public static void setConfiguration(String connectionURL) {
         connectURL = connectionURL;
