@@ -7,11 +7,33 @@ import java.util.Date;
 
 public class DBQueryParser {
 
+    /**
+     * Query the database table
+     *
+     * @param table table name to query from
+     * @param columns to be retrieved
+     * @param conditions to be applied
+     * @param variables to be inserted
+     *
+     * @return Result of the query
+     */
     public static ResultSet query(String table, String[] columns, String[] conditions, Object[] variables)
             throws SQLException, Exception {
         return query(table, columns, conditions, variables, null);
     }
 
+
+    /**
+     * Query the database table
+     *
+     * @param table table name to query from
+     * @param columns to be retrieved
+     * @param conditions to be applied
+     * @param variables to be inserted
+     * @param orderby to be arranged
+     *
+     * @return Result of the query
+     */
     public static ResultSet query(String table, String[] columns, String[] conditions, Object[] variables,
             String[] orderby) throws SQLException, Exception {
 
@@ -81,7 +103,15 @@ public class DBQueryParser {
       return result;
     }
 
-
+    /**
+     * Insert the variables into the placeholder of the prepareStatement
+     *
+     * @param ps the PreparedStatement to use
+     * @param argObj the object to be placed
+     * @param pt the position to be placed
+     *
+     * @return PreparedStatement that was updated
+     */
     private static PreparedStatement updateVariables(PreparedStatement ps, Object argObj, int pt)
             throws SQLException, Exception {
         if (argObj == null) {
