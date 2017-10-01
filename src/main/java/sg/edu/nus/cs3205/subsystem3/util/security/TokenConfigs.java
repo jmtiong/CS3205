@@ -23,7 +23,7 @@ public class TokenConfigs {
     public static <T> T getConfig(String key, Class<T> clazz) {
         if (clazz == byte[].class) {
             return clazz.cast(getConfig(key).getBytes(StandardCharsets.UTF_8));
-        } else if (clazz == long.class) {
+        } else if (clazz == long.class || clazz == Long.class) {
             return clazz.cast(Long.valueOf(getConfig(key)));
         } else {
             return clazz.cast(getConfig(key));
