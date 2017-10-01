@@ -19,7 +19,8 @@ public final class TokenUtils {
     private static final String hmacAlgorithm = TokenConfigs.getConfig("algorithm.hmac");
     private static final byte[] jwtHeaderBytes = TokenConfigs.getConfig("jwt.header", byte[].class);
     private static final byte[] secretBytes = TokenConfigs.getConfig("jwt.secret", byte[].class);
-    private static final long jwtLeeway = TokenConfigs.getConfig("jwt.leeway", long.class);
+    private static final long jwtExpiration = TokenConfigs.getConfig("jwt.expiration", Long.class);
+    private static final long jwtLeeway = TokenConfigs.getConfig("jwt.leeway", Long.class);
 
     private static MessageDigest sha256;
     private static Mac hmacSHA256;
