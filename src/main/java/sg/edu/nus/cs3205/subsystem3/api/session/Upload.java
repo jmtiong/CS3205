@@ -9,7 +9,7 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientFactory;
+import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.Invocation;
 import javax.ws.rs.core.MediaType;
@@ -41,7 +41,7 @@ public class Upload implements Session {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        Client client = ClientFactory.newClient();
+        Client client = ClientBuilder.newClient();
         Invocation.Builder builder = client.target("<location endpoint>").request();
         Response response = builder.post(Entity.entity(stream, "application/json"));
         return Response.status(200).entity("tesing only").header("Access-Control-Allow-Origin", "*")
