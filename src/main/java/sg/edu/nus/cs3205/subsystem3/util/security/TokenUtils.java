@@ -7,12 +7,16 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
 import java.util.Base64;
+import java.util.Base64.Decoder;
+import java.util.Base64.Encoder;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import javax.security.auth.login.CredentialException;
+
+import sg.edu.nus.cs3205.subsystem3.objects.GrantRequest;
 
 public final class TokenUtils {
     private static final String hashAlgorithm = TokenConfigs.getConfig("algorithm.hash");
@@ -22,8 +26,10 @@ public final class TokenUtils {
     private static final long jwtExpiration = TokenConfigs.getConfig("jwt.expiration", Long.class);
     private static final long jwtLeeway = TokenConfigs.getConfig("jwt.leeway", Long.class);
 
-    private static MessageDigest sha256;
-    private static Mac hmacSHA256;
+    private static final MessageDigest sha256;
+    private static final Mac hmacSHA256;
+    private static final Encoder BASE64_ENCODER = Base64.getUrlEncoder().withoutPadding();
+    private static final Decoder BASE64_DECODER = Base64.getUrlDecoder();
     static {
         try {
             sha256 = MessageDigest.getInstance(hashAlgorithm);
@@ -42,12 +48,16 @@ public final class TokenUtils {
         return Base64.getEncoder().encodeToString(hash);
     }
 
+    public static String createJWT(GrantRequest request) throws InvalidKeyException {
+        return createJWT(request.getPasswordClaim(System.currentTimeMillis() + jwtExpiration));
+    }
+
     public static String createJWT(String payloadJson) throws InvalidKeyException {
-        String header = Base64.getUrlEncoder().encodeToString(jwtHeaderBytes);
-        String payload = Base64.getUrlEncoder().encodeToString(payloadJson.getBytes(StandardCharsets.UTF_8));
+        String header = BASE64_ENCODER.encodeToString(jwtHeaderBytes);
+        String payload = BASE64_ENCODER.encodeToString(payloadJson.getBytes(StandardCharsets.UTF_8));
         String content = String.format("%s.%s", header, payload);
 
-        String signature = Base64.getUrlEncoder().encodeToString(createSignature(content));
+        String signature = BASE64_ENCODER.encodeToString(createSignature(content));
 
         return String.format("%s.%s", content, signature);
     }
@@ -58,9 +68,9 @@ public final class TokenUtils {
             throw new GeneralSecurityException("Malformed JWT format");
         }
 
-        String header = new String(Base64.getUrlDecoder().decode(parts[0])),
-                payload = new String(Base64.getUrlDecoder().decode(parts[1]));
-        byte[] signature = Base64.getUrlDecoder().decode(parts[2]);
+        String header = new String(BASE64_DECODER.decode(parts[0])),
+                payload = new String(BASE64_DECODER.decode(parts[1]));
+        byte[] signature = BASE64_DECODER.decode(parts[2]);
         if (!MessageDigest.isEqual(createSignature(String.format("%s.%s", header, payload)), signature)) {
             throw new SignatureException("Invalid signature");
         }
