@@ -8,6 +8,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Request;
 import javax.ws.rs.core.UriInfo;
 
+import sg.edu.nus.cs3205.subsystem3.api.oauth.TokenGranter;
 import sg.edu.nus.cs3205.subsystem3.api.session.HeartSession;
 
 /**
@@ -25,6 +26,11 @@ public class Server {
     @Produces({ MediaType.APPLICATION_JSON })
     public String getIndex() {
         return "\"Hello World!\"";
+    }
+
+    @Path("/oauth/token")
+    public TokenGranter grant() {
+        return new TokenGranter();
     }
 
     @Path("/upload")
