@@ -62,29 +62,26 @@ public final class TokenUtils {
         return String.format("%s.%s", content, signature);
     }
 
-    public static boolean verifyJWT(String jwt) throws Exception {
+    public static void verifyJWT(String jwt) throws Exception {
         String[] parts = jwt.split("\\.");
         if (parts.length != 3) {
             throw new GeneralSecurityException("Malformed JWT format");
         }
 
-        String header = new String(BASE64_DECODER.decode(parts[0])),
-                payload = new String(BASE64_DECODER.decode(parts[1]));
         byte[] signature = BASE64_DECODER.decode(parts[2]);
-        if (!MessageDigest.isEqual(createSignature(String.format("%s.%s", header, payload)), signature)) {
+        if (!MessageDigest.isEqual(createSignature(String.format("%s.%s", parts[0], parts[1])), signature)) {
             throw new SignatureException("Invalid signature");
         }
         // verify claims
+        String payload = new String(BASE64_DECODER.decode(parts[1]));
         Matcher matcher = Pattern.compile("\"exp\"\\s*:\\s*(\\d+)").matcher(payload);
         if (matcher.find() && Long.parseLong(matcher.group(1)) < System.currentTimeMillis() - jwtLeeway) {
             throw new CredentialException("Token expired");
         }
-        return true;
     }
 
     private static byte[] createSignature(String content) throws InvalidKeyException {
         hmacSHA256.init(new SecretKeySpec(secretBytes, hmacAlgorithm));
-        byte[] signatureBytes = hmacSHA256.doFinal(content.getBytes(StandardCharsets.UTF_8));
-        return signatureBytes;
+        return hmacSHA256.doFinal(content.getBytes(StandardCharsets.UTF_8));
     }
 }
