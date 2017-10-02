@@ -32,10 +32,12 @@ public class TokenGranter {
         if (nfcToken == null) {
             throw new WebException(Response.Status.BAD_REQUEST, "Missing X-NFC-Token header");
         }
-        if (request.getGrantType() == null) {
-            throw new WebException(Response.Status.BAD_REQUEST, "Missing grant_type field");
-        } else if (request.getGrantType() == GrantType.PASSWORD) {
-            if (request.getUsername() != null && request.getPasshash() != null) {
+        if (request == null) {
+            throw new WebException(Response.Status.BAD_REQUEST, "Missing request body");
+        } else if (request.grantType == null) {
+            throw new WebException(Response.Status.BAD_REQUEST, "Missing/invalid grant_type");
+        } else if (request.grantType == GrantType.PASSWORD) {
+            if (request.username != null && request.passhash != null) {
                 try {
                     String jwt = TokenUtils.createJWT(request);
                     return Response.ok(new PasswordGrant(jwt)).build();
@@ -45,6 +47,6 @@ public class TokenGranter {
             }
             throw new WebException(Response.Status.UNAUTHORIZED, "Invalid credential");
         }
-        throw new WebException();
+        throw new WebException(Response.Status.BAD_REQUEST, "Unknown %s grant_type", request.grantType);
     }
 }
