@@ -1,12 +1,19 @@
 package sg.edu.nus.cs3205.subsystem3.api.session;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
+
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
+import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
-import javax.ws.rs.PathParam;
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.client.Entity;
+import javax.ws.rs.client.Invocation;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.io.*;
 
 @Produces(MediaType.APPLICATION_JSON)
 public class Upload implements Session {
@@ -75,6 +82,19 @@ public class Upload implements Session {
     }
 
     private boolean verifyJWTToken(String jWTToken){
-
     }
+    // public Response testingUploadFileByClient() {
+    //     String path = "/location.json";
+    //     File f = new File(path);
+    //     InputStream stream = null;
+    //     try {
+    //         stream = new FileInputStream(f);
+    //     } catch (Exception e) {
+    //         e.printStackTrace();
+    //     }
+    //     Client client = ClientBuilder.newClient();
+    //     Invocation.Builder builder = client.target("<location endpoint>").request();
+    //     Response response = builder.post(Entity.entity(stream, "application/json"));
+    //     return Response.status(200).entity("tesing only").header("Access-Control-Allow-Origin", "*")
+    //             .header("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT, OPTIONS").build();
 }
