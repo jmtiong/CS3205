@@ -8,22 +8,21 @@
 
 	<servlet>
 		<servlet-name>Subsystem3 RESTful API</servlet-name>
-		<servlet-class>com.sun.jersey.spi.container.servlet.ServletContainer</servlet-class>
+		<servlet-class>org.glassfish.jersey.servlet.ServletContainer</servlet-class>
 		<init-param>
-			<param-name>com.sun.jersey.config.property.packages</param-name>
+			<param-name>jersey.config.server.provider.packages</param-name>
 			<param-value>sg.edu.nus.cs3205.subsystem3</param-value>
 		</init-param>
 		<load-on-startup>1</load-on-startup>
 	</servlet>
 	<servlet-mapping>
 		<servlet-name>Subsystem3 RESTful API</servlet-name>
-        <url-pattern>/</url-pattern>
-        <url-pattern>/api/*</url-pattern>
+		<url-pattern>/api/*</url-pattern>
+		<url-pattern>/*</url-pattern>
 	</servlet-mapping>
 
 	<!-- Configure the resource at context.xml level -->
 	<resource-ref>
-		<description>DB Connection</description>
 		<res-ref-name>jdbc/TestDB</res-ref-name>
 		<res-type>javax.sql.DataSource</res-type>
 		<res-auth>Container</res-auth>
