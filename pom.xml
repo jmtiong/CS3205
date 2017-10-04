@@ -35,16 +35,12 @@
 			<version>2.9.1</version>
 		</dependency>
 
-<<<<<<< HEAD
   	<dependency>
   		<groupId>mysql</groupId>
   		<artifactId>mysql-connector-java</artifactId>
   		<version>6.0.6</version>
   	</dependency>
 
-=======
-		<!-- Testing -->
->>>>>>> 518c8e75f05aea82a12a1e48a9a336d3eed1cc01
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
