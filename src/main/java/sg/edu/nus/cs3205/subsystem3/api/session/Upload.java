@@ -7,6 +7,7 @@ import java.io.InputStream;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
@@ -30,12 +31,12 @@ public class Upload implements Session {
       // Verify jWTToken
       // Obtain userID from the token
 
-      Response response null;
+      Response response = null;
       // just for a test
       int userID = 1;
       InputStream stream = null;
       if(type.equalsIgnoreCase("heart")){
-        response = uploadToHeart();
+        response = uploadToHeart(userID, 12, timestamp);
       }else if(type.equalsIgnoreCase("image")){
         response = uploadToImage(userID, is, timestamp);
       }else if(type.equalsIgnoreCase("video")){
@@ -77,12 +78,10 @@ public class Upload implements Session {
       Client client = ClientBuilder.newClient();
       Invocation.Builder builder = client.target("http://cs3205-4-i.comp.nus.edu.sg/api/team3/heartservice/"+userID+"/"+heartrate+"/"+timestamp).request();
       // @TODO: Add in the headers for server 4 verification in the future
-      Response response = builder.post();
+      Response response = builder.post(Entity.entity("a sample text", "text/plain"));
       return response;
     }
-
-    private boolean verifyJWTToken(String jWTToken){
-    }
+    
     // public Response testingUploadFileByClient() {
     //     String path = "/location.json";
     //     File f = new File(path);
