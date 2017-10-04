@@ -10,8 +10,12 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.JsonNode;
+
 import sg.edu.nus.cs3205.subsystem3.api.oauth.TokenGranter;
 import sg.edu.nus.cs3205.subsystem3.api.session.HeartSession;
+import sg.edu.nus.cs3205.subsystem3.api.session.Upload;
 import sg.edu.nus.cs3205.subsystem3.exceptions.WebException;
 import sg.edu.nus.cs3205.subsystem3.util.security.TokenUtils;
 
@@ -48,7 +52,7 @@ public class Server {
     }
 
     @Path("/upload")
-    public HeartSession upload(@HeaderParam("Authorization") String accessToken,
+    public Upload upload(@HeaderParam("Authorization") String accessToken,
             @HeaderParam("X-NFC-Token") String nfcToken) {
         if (accessToken == null) {
             throw new WebException(Response.Status.UNAUTHORIZED, "Missing Authorization header");
@@ -69,6 +73,22 @@ public class Server {
         } catch (Exception e) {
             throw new WebException(Response.Status.UNAUTHORIZED, "Invalid NFC token");
         }
-        return new HeartSession();
+
+        // All is well, obtain username from the token
+        String[] parts = accessToken.split("\\.");
+        String jsonStr = TokenUtils.decodeString(parts[1]);
+        JsonNode jn = null;
+        ObjectMapper mapper = new ObjectMapper();
+        try{
+           jn = mapper.readValue(jsonStr, JsonNode.class);
+        } catch(Exception e){
+          e.printStackTrace();
+        }
+        if(jn == null){
+         throw new WebException(Response.Status.UNAUTHORIZED, "Invalid token values");
+        }
+        // @TODO: CHANGE SOON (into UserID)
+        int userID = jn.path("username").asInt();
+        return new Upload(userID);
     }
 }
