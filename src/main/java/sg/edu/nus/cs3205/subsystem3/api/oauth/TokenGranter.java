@@ -10,6 +10,8 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+
 import sg.edu.nus.cs3205.subsystem3.exceptions.WebException;
 import sg.edu.nus.cs3205.subsystem3.objects.GrantRequest;
 import sg.edu.nus.cs3205.subsystem3.objects.GrantRequest.GrantType;
@@ -41,7 +43,7 @@ public class TokenGranter {
                 try {
                     String jwt = TokenUtils.createJWT(request);
                     return Response.ok(new PasswordGrant(jwt)).build();
-                } catch (InvalidKeyException e) {
+                } catch (JsonProcessingException | InvalidKeyException e) {
                     throw new WebException(e);
                 }
             }

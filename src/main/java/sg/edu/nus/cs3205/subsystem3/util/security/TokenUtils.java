@@ -16,6 +16,10 @@ import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import javax.security.auth.login.CredentialException;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+
 import sg.edu.nus.cs3205.subsystem3.objects.GrantRequest;
 
 public final class TokenUtils {
@@ -28,6 +32,8 @@ public final class TokenUtils {
 
     private static final MessageDigest sha256;
     private static final Mac hmacSHA256;
+    private static final ObjectMapper MAPPER = new ObjectMapper()
+            .disable(SerializationFeature.FAIL_ON_EMPTY_BEANS);
     private static final Encoder BASE64_ENCODER = Base64.getUrlEncoder().withoutPadding();
     private static final Decoder BASE64_DECODER = Base64.getUrlDecoder();
     static {
@@ -48,13 +54,13 @@ public final class TokenUtils {
         return Base64.getEncoder().encodeToString(hash);
     }
 
-    public static String createJWT(GrantRequest request) throws InvalidKeyException {
+    public static String createJWT(GrantRequest request) throws JsonProcessingException, InvalidKeyException {
         return createJWT(request.getPasswordClaim(System.currentTimeMillis() + jwtExpiration));
     }
 
-    public static String createJWT(String payloadJson) throws InvalidKeyException {
+    public static String createJWT(Object claim) throws JsonProcessingException, InvalidKeyException {
         String header = BASE64_ENCODER.encodeToString(jwtHeaderBytes);
-        String payload = BASE64_ENCODER.encodeToString(payloadJson.getBytes(StandardCharsets.UTF_8));
+        String payload = BASE64_ENCODER.encodeToString(MAPPER.writeValueAsBytes(claim));
         String content = String.format("%s.%s", header, payload);
 
         String signature = BASE64_ENCODER.encodeToString(createSignature(content));
