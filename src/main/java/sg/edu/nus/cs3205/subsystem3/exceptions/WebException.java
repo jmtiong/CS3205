@@ -14,28 +14,28 @@ public class WebException extends WebApplicationException {
         super();
     }
 
-    public WebException(Throwable cause) {
+    public WebException(final Throwable cause) {
         super(cause);
     }
 
-    public WebException(Throwable cause, Response response) {
+    public WebException(final Throwable cause, final Response response) {
         super(cause, response);
     }
 
-    public WebException(Throwable cause, Status status, String errorMessage) {
-        this(cause, Response.status(status).entity(new ErrorResponse(errorMessage)).type(MediaType.APPLICATION_JSON)
-                .build());
+    public WebException(final Throwable cause, final Status status, final String errorMessage) {
+        this(cause, Response.status(status).entity(new ErrorResponse(errorMessage))
+                .type(MediaType.APPLICATION_JSON).build());
     }
 
-    public WebException(Status status, String errorMessage) {
+    public WebException(final Status status, final String errorMessage) {
         this(null, status, errorMessage);
     }
 
-    public WebException(Status status, String errorMessageFormat, Object... formatArgs) {
+    public WebException(final Status status, final String errorMessageFormat, final Object... formatArgs) {
         this(status, String.format(errorMessageFormat, formatArgs));
     }
 
-    public WebException(Status status, Exception exception) {
+    public WebException(final Status status, final Exception exception) {
         this(exception, status, exception.getMessage());
     }
 }
