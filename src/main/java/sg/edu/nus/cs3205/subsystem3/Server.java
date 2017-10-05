@@ -26,9 +26,9 @@ public class Server {
 
     @GET
     public Response getRoot() {
-        return Response.ok(new Links(Links.newLink(uri, "", "self", "GET"),
-                Links.newLink(uri, "oauth/token", "oauth.token", "POST"),
-                Links.newLink(uri, "upload", "upload", "POST"))).build();
+        return Response.ok(new Links(Links.newLink(this.uri, "", "self", "GET"),
+                Links.newLink(this.uri, "oauth/token", "oauth.token", "POST"),
+                Links.newLink(this.uri, "upload", "upload", "POST"))).build();
     }
 
     @Path("/oauth/token")
@@ -37,8 +37,8 @@ public class Server {
     }
 
     @Path("/session")
-    public Session session(@HeaderParam("Authorization") String accessToken,
-            @HeaderParam("X-NFC-Token") String nfcToken) {
+    public Session session(@HeaderParam("Authorization") final String accessToken,
+            @HeaderParam("X-NFC-Token") final String nfcToken) {
         GrantClaim claim;
         if (accessToken == null) {
             throw new WebException(Response.Status.UNAUTHORIZED, "Missing Authorization header");
@@ -47,7 +47,7 @@ public class Server {
         }
         try {
             claim = TokenUtils.verifyJWT(accessToken.substring("Bearer ".length()));
-        } catch (Exception e) {
+        } catch (final Exception e) {
             throw new WebException(Response.Status.UNAUTHORIZED, e);
         }
 
@@ -56,17 +56,17 @@ public class Server {
         }
         try {
             nfcToken.charAt(0);
-        } catch (Exception e) {
+        } catch (final Exception e) {
             throw new WebException(Response.Status.UNAUTHORIZED, "Invalid NFC token");
         }
 
-        return new Session(uri, claim.userId);
+        return new Session(this.uri, claim.userId);
     }
 
     @Deprecated
     @Path("/upload")
-    public Session upload(@HeaderParam("Authorization") String accessToken,
-            @HeaderParam("X-NFC-Token") String nfcToken) {
-        return session(accessToken, nfcToken);
+    public Session upload(@HeaderParam("Authorization") final String accessToken,
+            @HeaderParam("X-NFC-Token") final String nfcToken) {
+        return this.session(accessToken, nfcToken);
     }
 }

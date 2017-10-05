@@ -11,10 +11,10 @@ public class GrantRequest {
         PASSWORD;
     }
 
-    public GrantClaim getPasswordClaim(long expiration) {
-        if (userId == null) {
+    public GrantClaim getPasswordClaim(final long expiration) {
+        if (this.userId == null) {
             throw new IllegalStateException("userId hasn't been populated");
         }
-        return new GrantClaim(userId, expiration);
+        return new GrantClaim(this.userId, expiration);
     }
 }

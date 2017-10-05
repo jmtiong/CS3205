@@ -10,7 +10,7 @@ public class GrantClaim {
     public GrantClaim() {
     }
 
-    public GrantClaim(int userId, long expiration) {
+    public GrantClaim(final int userId, final long expiration) {
         this.userId = userId;
         this.exp = expiration;
     }

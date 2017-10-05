@@ -5,11 +5,11 @@ import javax.ws.rs.core.UriInfo;
 public final class Links {
     public Link[] links;
 
-    public Links(Link... links) {
+    public Links(final Link... links) {
         this.links = links;
     }
 
-    public static Link newLink(UriInfo uri, String path, String rel, String type) {
+    public static Link newLink(final UriInfo uri, final String path, final String rel, final String type) {
         return new Link(uri.getAbsolutePathBuilder().path(path).build().toString(), rel, type);
     }
 }

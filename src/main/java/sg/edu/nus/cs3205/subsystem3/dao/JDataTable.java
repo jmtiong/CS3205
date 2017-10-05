@@ -12,57 +12,58 @@ public class JDataTable {
     Map<String, JDataObject> table = null;
     ResultSet rs = null;
 
-    public JDataTable(String tableName) {
+    public JDataTable(final String tableName) {
         this.tableName = tableName;
     }
 
-    public JDataObject getDataObject(String oid) {
-        if (table == null) {
-            getAllObjects();
+    public JDataObject getDataObject(final String oid) {
+        if (this.table == null) {
+            this.getAllObjects();
         }
 
-        return table.get(oid);
+        return this.table.get(oid);
     }
 
     public List<JDataObject> getAllObjects() {
-        if (table != null) {
-            List<JDataObject> list = new ArrayList<JDataObject>(table.values());
+        if (this.table != null) {
+            final List<JDataObject> list = new ArrayList<JDataObject>(this.table.values());
             return list;
         }
-        return queryAll();
+        return this.queryAll();
     }
 
     private List<JDataObject> queryAll() {
-        return query(null, null, null);
+        return this.query(null, null, null);
     }
 
-    public List<JDataObject> query(String[] columns, String[] conditions, Object[] variables) {
-        List<JDataObject> rows = new ArrayList<>();
-        table = new HashMap<>();
+    public List<JDataObject> query(final String[] columns, final String[] conditions,
+            final Object[] variables) {
+        final List<JDataObject> rows = new ArrayList<>();
+        this.table = new HashMap<>();
         try {
-            rs = DBQueryParser.query(tableName, columns, conditions, variables);
-            while (rs.next()) {
-                JDataObject row = new JDataObject();
-                for (String column : getColumns()) {
-                    row.put(column, rs.getObject(column));
+            this.rs = DBQueryParser.query(this.tableName, columns, conditions, variables);
+            while (this.rs.next()) {
+                final JDataObject row = new JDataObject();
+                for (final String column : this.getColumns()) {
+                    row.put(column, this.rs.getObject(column));
                 }
-                table.put(rs.getString("oid"), row);
+                this.table.put(this.rs.getString("oid"), row);
                 rows.add(row);
             }
-        } catch (Exception s) {
+        } catch (final Exception s) {
             s.printStackTrace();
         }
         return rows;
     }
 
     public List<String> getColumns() {
-        List<String> columns = new ArrayList<>();
+        final List<String> columns = new ArrayList<>();
         try {
-            ResultSetMetaData rsmd = rs.getMetaData();
+            final ResultSetMetaData rsmd = this.rs.getMetaData();
             for (int i = 0; i < rsmd.getColumnCount(); i++) {
                 columns.add(rsmd.getColumnName(i));
             }
-        } catch (Exception s) {
+        } catch (final Exception s) {
             s.printStackTrace();
         }
         return columns;
