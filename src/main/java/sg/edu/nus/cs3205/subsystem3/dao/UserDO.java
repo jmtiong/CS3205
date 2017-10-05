@@ -2,28 +2,28 @@ package sg.edu.nus.cs3205.subsystem3.dao;
 
 public class UserDO {
     private int uid;
-    private String username;
+    private final String username;
     private String nfcid;
 
-    public UserDO(String username) {
+    public UserDO(final String username) {
         super();
         this.username = username;
     }
 
     public String getNfcid() {
-        return nfcid;
+        return this.nfcid;
     }
 
-    public void setNfcid(String nfcid) {
+    public void setNfcid(final String nfcid) {
         this.nfcid = nfcid;
     }
 
     public int getUid() {
-        return uid;
+        return this.uid;
     }
 
     public String getUsername() {
-        return username;
+        return this.username;
     }
 
 }

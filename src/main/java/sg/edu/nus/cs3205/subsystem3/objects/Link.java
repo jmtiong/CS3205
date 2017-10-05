@@ -5,7 +5,7 @@ public class Link {
     public String rel;
     public String type;
 
-    public Link(String link, String rel, String type) {
+    public Link(final String link, final String rel, final String type) {
         this.link = link;
         this.rel = rel;
         this.type = type;

@@ -31,16 +31,16 @@ public class Session {
         public String pathPrefix;
         public String resourceServerPath;
 
-        private UploadType(String path) {
+        private UploadType(final String path) {
             this(path, path);
         }
 
-        private UploadType(String pathPrefix, String resourceServerPath) {
+        private UploadType(final String pathPrefix, final String resourceServerPath) {
             this.pathPrefix = pathPrefix;
             this.resourceServerPath = resourceServerPath;
         }
 
-        public static UploadType fromString(String value) {
+        public static UploadType fromString(final String value) {
             try {
                 return Stream.of(UploadType.values()).filter(type -> value.startsWith(type.pathPrefix))
                         .findAny().get();
@@ -59,9 +59,9 @@ public class Session {
 
     private final Integer userID;
 
-    private UriInfo uri;
+    private final UriInfo uri;
 
-    public Session(UriInfo uri, final int userID) {
+    public Session(final UriInfo uri, final int userID) {
         this.uri = uri;
         this.userID = userID;
     }
@@ -80,11 +80,11 @@ public class Session {
     @GET
     @Path("/{type}")
     public Response get(@PathParam("type") final UploadType type) {
-        final Invocation.Builder client = ClientBuilder.newClient().target(
-                String.format("%s/%s/%d/all", RESOURCE_SERVER_UPLOAD_PATH, type.resourceServerPath, userID))
+        final Invocation.Builder client = ClientBuilder.newClient().target(String.format("%s/%s/%d/all",
+                RESOURCE_SERVER_UPLOAD_PATH, type.resourceServerPath, this.userID))
                 .request(MediaType.APPLICATION_JSON);
         System.out.println(String.format("Requesting %s/%s/%d/all", RESOURCE_SERVER_UPLOAD_PATH,
-                type.resourceServerPath, userID));
+                type.resourceServerPath, this.userID));
         return client.get();
     }
 
@@ -94,7 +94,7 @@ public class Session {
             @QueryParam("timestamp") final long timestamp, final InputStream requestStream) {
         final String target;
         if (type == UploadType.HEART) {
-            Scanner scanner = new Scanner(requestStream);
+            final Scanner scanner = new Scanner(requestStream);
             if (!scanner.hasNext()) {
                 scanner.close();
                 throw new WebException(Response.Status.BAD_REQUEST, "Provide heart rate in body");
@@ -103,11 +103,11 @@ public class Session {
                 throw new WebException(Response.Status.BAD_REQUEST, "Heart rate should be an integer");
             }
             target = String.format("%s/%s/%d/%d/%d", RESOURCE_SERVER_UPLOAD_PATH, type.resourceServerPath,
-                    userID, scanner.nextInt(), timestamp);
+                    this.userID, scanner.nextInt(), timestamp);
             scanner.close();
         } else {
             target = String.format("%s/%s/%d/upload/%d", RESOURCE_SERVER_UPLOAD_PATH, type.resourceServerPath,
-                    userID, timestamp);
+                    this.userID, timestamp);
         }
         final Invocation.Builder client = ClientBuilder.newClient().target(target).request();
         System.out.println(target);
@@ -122,6 +122,6 @@ public class Session {
     @Path("/{type}/{timestamp}")
     public Response upload2(@PathParam("type") final UploadType type,
             @PathParam("timestamp") final long timestamp, final InputStream requestStream) {
-        return upload(type, timestamp, requestStream);
+        return this.upload(type, timestamp, requestStream);
     }
 }

@@ -24,7 +24,7 @@ public class Subsystem3Provider extends JacksonJsonProvider
     }
 
     @Override
-    public Response toResponse(JsonProcessingException exception) {
+    public Response toResponse(final JsonProcessingException exception) {
         return Response.status(Response.Status.BAD_REQUEST).entity(new ErrorResponse(exception.getMessage()))
                 .type(MediaType.APPLICATION_JSON).build();
     }
