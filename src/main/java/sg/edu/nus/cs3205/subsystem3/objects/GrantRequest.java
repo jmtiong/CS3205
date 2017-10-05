@@ -6,17 +6,6 @@ public class GrantRequest {
     public String username;
     public String passhash;
 
-    @SuppressWarnings("unused")
-    private static final class GrantClaim {
-        public int userId;
-        public long exp;
-
-        public GrantClaim(int userId, long expiration) {
-            this.userId = userId;
-            this.exp = expiration;
-        }
-    }
-
     // TODO: handle JsonMappingException when inputting an integer out of range
     public static enum GrantType {
         PASSWORD;

@@ -15,7 +15,8 @@ import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
 import sg.edu.nus.cs3205.subsystem3.objects.ErrorResponse;
 
 @Provider
-public class Subsystem3Provider extends JacksonJsonProvider implements ExceptionMapper<JsonProcessingException> {
+public class Subsystem3Provider extends JacksonJsonProvider
+        implements ExceptionMapper<JsonProcessingException> {
     public Subsystem3Provider() {
         super(new ObjectMapper().setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE)
                 .enable(MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS)
