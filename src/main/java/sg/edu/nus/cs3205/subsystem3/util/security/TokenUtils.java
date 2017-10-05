@@ -86,6 +86,10 @@ public final class TokenUtils {
         }
     }
 
+    public static String decodeString(String token){
+      return new String(BASE64_DECODER.decode(token));
+    }
+
     private static byte[] createSignature(String content) throws InvalidKeyException {
         hmacSHA256.init(new SecretKeySpec(secretBytes, hmacAlgorithm));
         return hmacSHA256.doFinal(content.getBytes(StandardCharsets.UTF_8));
