@@ -16,36 +16,51 @@ import javax.ws.rs.core.Response;
 
 @Produces(MediaType.APPLICATION_JSON)
 public class Upload implements Session {
+    int userID = 0;
+    public Upload(int userID){
+      this.userID = userID;
+    }
     @GET
     @Override
     public String get() {
         return "\"You sent a GET request\"";
     }
 
-    @Override
-    @Path("/upload/{type}/{timestamp}")
+    @Path("/{type}/{int}/{timestamp}")
     @POST
     @Produces(MediaType.TEXT_PLAIN)
-    public Response upload(@PathParam("type") String type, @PathParam("timestamp") long timestamp,
-            final InputStream is) {
-        // Verify jWTToken
-        // Obtain userID from the token
+    public Response upload(@PathParam("type")String type, @PathParam("timestamp")long timestamp, @PathParam("int")int heartrate){
+      // Verify jWTToken
+      // Obtain userID from the token
 
-        Response response = null;
-        // just for a test
-        int userID = 1;
-        InputStream stream = null;
-        if (type.equalsIgnoreCase("heart")) {
-            response = uploadToHeart(userID, 12, timestamp);
-        } else if (type.equalsIgnoreCase("image")) {
-            response = uploadToImage(userID, is, timestamp);
-        } else if (type.equalsIgnoreCase("video")) {
-            response = uploadToImage(userID, is, timestamp);
-        } else if (type.equalsIgnoreCase("step")) {
-            response = uploadToImage(userID, is, timestamp);
-        } else {
-            response = Response.status(401).entity("unknown request made.").build();
-        }
+      Response response = null;
+      InputStream stream = null;
+      if(type.equalsIgnoreCase("heart")){
+        response = uploadToHeart(userID, heartrate, timestamp);
+      }else{
+        response = Response.status(401).entity("unknown request made.").build();
+      }
+
+      return response;
+    }
+    @Path("/{type}/{timestamp}")
+    @POST
+    @Produces(MediaType.TEXT_PLAIN)
+    public Response upload(@PathParam("type")String type, @PathParam("timestamp")long timestamp, final InputStream is){
+      // Verify jWTToken
+      // Obtain userID from the token
+
+      Response response = null;
+      InputStream stream = null;
+      if(type.equalsIgnoreCase("image")){
+        response = uploadToImage(userID, is, timestamp);
+      }else if(type.equalsIgnoreCase("video")){
+        response = uploadToImage(userID, is, timestamp);
+      }else if(type.equalsIgnoreCase("step")){
+        response = uploadToImage(userID, is, timestamp);
+      }else{
+        response = Response.status(401).entity("unknown request made.").build();
+      }
 
         return response;
     }
