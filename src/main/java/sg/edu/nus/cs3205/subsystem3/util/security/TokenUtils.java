@@ -9,8 +9,6 @@ import java.security.SignatureException;
 import java.util.Base64;
 import java.util.Base64.Decoder;
 import java.util.Base64.Encoder;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
@@ -18,8 +16,9 @@ import javax.security.auth.login.CredentialException;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 
+import sg.edu.nus.cs3205.subsystem3.objects.GrantClaim;
 import sg.edu.nus.cs3205.subsystem3.objects.GrantRequest;
 
 public final class TokenUtils {
@@ -33,7 +32,7 @@ public final class TokenUtils {
     private static final MessageDigest sha256;
     private static final Mac hmacSHA256;
     private static final ObjectMapper MAPPER = new ObjectMapper()
-            .disable(SerializationFeature.FAIL_ON_EMPTY_BEANS);
+            .setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
     private static final Encoder BASE64_ENCODER = Base64.getUrlEncoder().withoutPadding();
     private static final Decoder BASE64_DECODER = Base64.getUrlDecoder();
     static {
@@ -68,7 +67,7 @@ public final class TokenUtils {
         return String.format("%s.%s", content, signature);
     }
 
-    public static void verifyJWT(String jwt) throws Exception {
+    public static GrantClaim verifyJWT(String jwt) throws Exception {
         String[] parts = jwt.split("\\.");
         if (parts.length != 3) {
             throw new GeneralSecurityException("Malformed JWT format");
@@ -80,14 +79,11 @@ public final class TokenUtils {
         }
         // verify claims
         String payload = new String(BASE64_DECODER.decode(parts[1]));
-        Matcher matcher = Pattern.compile("\"exp\"\\s*:\\s*(\\d+)").matcher(payload);
-        if (matcher.find() && Long.parseLong(matcher.group(1)) < System.currentTimeMillis() - jwtLeeway) {
+        GrantClaim claim = MAPPER.readValue(payload, GrantClaim.class);
+        if (claim.exp != null && claim.exp < System.currentTimeMillis() - jwtLeeway) {
             throw new CredentialException("Token expired");
         }
-    }
-
-    public static String decodeString(String token){
-      return new String(BASE64_DECODER.decode(token));
+        return claim;
     }
 
     private static byte[] createSignature(String content) throws InvalidKeyException {

@@ -41,6 +41,7 @@ public class TokenGranter {
         } else if (request.grantType == GrantType.PASSWORD) {
             if (request.username != null && request.passhash != null) {
                 try {
+                    request.userId = 1;
                     String jwt = TokenUtils.createJWT(request);
                     return Response.ok(new PasswordGrant(jwt)).build();
                 } catch (JsonProcessingException | InvalidKeyException e) {
