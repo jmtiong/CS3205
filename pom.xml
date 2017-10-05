@@ -35,12 +35,14 @@
 			<version>2.9.1</version>
 		</dependency>
 
-  	<dependency>
-  		<groupId>mysql</groupId>
-  		<artifactId>mysql-connector-java</artifactId>
-  		<version>6.0.6</version>
-  	</dependency>
+		<!-- Database Driver -->
+		<dependency>
+			<groupId>mysql</groupId>
+			<artifactId>mysql-connector-java</artifactId>
+			<version>6.0.6</version>
+		</dependency>
 
+		<!-- Testing -->
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>

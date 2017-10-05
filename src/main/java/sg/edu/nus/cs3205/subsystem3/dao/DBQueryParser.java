@@ -14,14 +14,12 @@ public class DBQueryParser {
      * @param columns to be retrieved
      * @param conditions to be applied
      * @param variables to be inserted
-     *
      * @return Result of the query
      */
     public static ResultSet query(String table, String[] columns, String[] conditions, Object[] variables)
             throws SQLException, Exception {
         return query(table, columns, conditions, variables, null);
     }
-
 
     /**
      * Query the database table
@@ -31,7 +29,6 @@ public class DBQueryParser {
      * @param conditions to be applied
      * @param variables to be inserted
      * @param orderby to be arranged
-     *
      * @return Result of the query
      */
     public static ResultSet query(String table, String[] columns, String[] conditions, Object[] variables,
@@ -41,7 +38,7 @@ public class DBQueryParser {
         // columns to retrieve
         if (columns != null && columns.length > 0) {
             for (String column : columns) {
-                query +=  column + ", " ;
+                query += column + ", ";
             }
             query += "''";
         } else {
@@ -53,7 +50,7 @@ public class DBQueryParser {
                 && variables.length == conditions.length) {
             query += "WHERE 1=1 ";
             for (String condition : conditions) {
-              //condition = (something = ?)
+                // condition = (something = ?)
                 query += "AND " + condition;
             }
         }
@@ -66,41 +63,40 @@ public class DBQueryParser {
         }
         query += ";";
         PreparedStatement ps = DB.getConnection().prepareStatement(query);
-        if(conditions != null && conditions.length > 0 && variables != null && variables.length > 0
-                && variables.length == conditions.length){
-          int i = 0;
-          for (String condition : conditions) {
-              ps = updateVariables(ps, variables[i], i);
-              i++;
-          }
+        if (conditions != null && conditions.length > 0 && variables != null && variables.length > 0
+                && variables.length == conditions.length) {
+            int i = 0;
+            for (String condition : conditions) {
+                ps = updateVariables(ps, variables[i], i);
+                i++;
+            }
         }
         ResultSet rs = ps.executeQuery();
         return rs;
     }
 
-
     /**
      * Insert a user record into server 3
      *
      * @param Object[] values, all the values for the user
-     *
-     * @return int value indicating how many rows are affected, 0 if insert fail.
+     * @return int value indicating how many rows are affected, 0 if insert
+     *         fail.
      */
-    public static int insertUser(Object[] values){
-      String sql = "INSERT INTO CS3205.user VALUES (?, ?, ?);";
-      int result = 0;
-      try{
-        PreparedStatement ps = DB.getConnection().prepareStatement(sql);
-        int i = 0;
-        for (Object value : values) {
-            ps = updateVariables(ps, values[i], i);
-            i++;
+    public static int insertUser(Object[] values) {
+        String sql = "INSERT INTO CS3205.user VALUES (?, ?, ?);";
+        int result = 0;
+        try {
+            PreparedStatement ps = DB.getConnection().prepareStatement(sql);
+            int i = 0;
+            for (Object value : values) {
+                ps = updateVariables(ps, values[i], i);
+                i++;
+            }
+            result = ps.executeUpdate();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-        result = ps.executeUpdate();
-      } catch (Exception e) {
-        e.printStackTrace();
-      }
-      return result;
+        return result;
     }
 
     /**
@@ -109,7 +105,6 @@ public class DBQueryParser {
      * @param ps the PreparedStatement to use
      * @param argObj the object to be placed
      * @param pt the position to be placed
-     *
      * @return PreparedStatement that was updated
      */
     private static PreparedStatement updateVariables(PreparedStatement ps, Object argObj, int pt)
