@@ -16,8 +16,8 @@ public class DBQueryParser {
      * @param variables to be inserted
      * @return Result of the query
      */
-    public static ResultSet query(String table, String[] columns, String[] conditions, Object[] variables)
-            throws SQLException, Exception {
+    public static ResultSet query(final String table, final String[] columns, final String[] conditions,
+            final Object[] variables) throws SQLException, Exception {
         return query(table, columns, conditions, variables, null);
     }
 
@@ -31,13 +31,13 @@ public class DBQueryParser {
      * @param orderby to be arranged
      * @return Result of the query
      */
-    public static ResultSet query(String table, String[] columns, String[] conditions, Object[] variables,
-            String[] orderby) throws SQLException, Exception {
+    public static ResultSet query(final String table, final String[] columns, final String[] conditions,
+            final Object[] variables, final String[] orderby) throws SQLException, Exception {
 
         String query = "SELECT ";
         // columns to retrieve
         if (columns != null && columns.length > 0) {
-            for (String column : columns) {
+            for (final String column : columns) {
                 query += column + ", ";
             }
             query += "''";
@@ -49,7 +49,7 @@ public class DBQueryParser {
         if (conditions != null && conditions.length > 0 && variables != null && variables.length > 0
                 && variables.length == conditions.length) {
             query += "WHERE 1=1 ";
-            for (String condition : conditions) {
+            for (final String condition : conditions) {
                 // condition = (something = ?)
                 query += "AND " + condition;
             }
@@ -57,7 +57,7 @@ public class DBQueryParser {
         // order by to apply
         if (orderby != null && orderby.length > 0) {
             query += "ORDER BY '' ";
-            for (String order : orderby) {
+            for (final String order : orderby) {
                 query += ", " + order;
             }
         }
@@ -66,12 +66,12 @@ public class DBQueryParser {
         if (conditions != null && conditions.length > 0 && variables != null && variables.length > 0
                 && variables.length == conditions.length) {
             int i = 0;
-            for (String condition : conditions) {
+            for (final String condition : conditions) {
                 ps = updateVariables(ps, variables[i], i);
                 i++;
             }
         }
-        ResultSet rs = ps.executeQuery();
+        final ResultSet rs = ps.executeQuery();
         return rs;
     }
 
@@ -82,18 +82,18 @@ public class DBQueryParser {
      * @return int value indicating how many rows are affected, 0 if insert
      *         fail.
      */
-    public static int insertUser(Object[] values) {
-        String sql = "INSERT INTO CS3205.user VALUES (?, ?, ?);";
+    public static int insertUser(final Object[] values) {
+        final String sql = "INSERT INTO CS3205.user VALUES (?, ?, ?);";
         int result = 0;
         try {
             PreparedStatement ps = DB.getConnection().prepareStatement(sql);
             int i = 0;
-            for (Object value : values) {
+            for (final Object value : values) {
                 ps = updateVariables(ps, values[i], i);
                 i++;
             }
             result = ps.executeUpdate();
-        } catch (Exception e) {
+        } catch (final Exception e) {
             e.printStackTrace();
         }
         return result;
@@ -107,8 +107,8 @@ public class DBQueryParser {
      * @param pt the position to be placed
      * @return PreparedStatement that was updated
      */
-    private static PreparedStatement updateVariables(PreparedStatement ps, Object argObj, int pt)
-            throws SQLException, Exception {
+    private static PreparedStatement updateVariables(final PreparedStatement ps, final Object argObj,
+            final int pt) throws SQLException, Exception {
         if (argObj == null) {
             ps.setNull(pt + 1, 0);
         } else if (String.class.isInstance(argObj)) {
@@ -122,14 +122,14 @@ public class DBQueryParser {
         } else if (Float.class.isInstance(argObj)) {
             ps.setFloat(pt + 1, (Float) argObj);
         } else if (Date.class.isInstance(argObj)) {
-            java.sql.Date sqlDate = new java.sql.Date(((Date) argObj).getTime());
+            final java.sql.Date sqlDate = new java.sql.Date(((Date) argObj).getTime());
             ps.setDate(pt + 1, sqlDate);
         } else if (argObj instanceof byte[]) {
             ps.setBytes(pt + 1, (byte[]) argObj);
         } else if (java.sql.Blob.class.isInstance(argObj)) {
             ps.setBlob(pt + 1, (java.sql.Blob) argObj);
         } else {
-            String argClassName = argObj.getClass().getName();
+            final String argClassName = argObj.getClass().getName();
             throw new Exception("Unknown argument type (" + pt + ") : " + (argClassName));
         }
         return ps;

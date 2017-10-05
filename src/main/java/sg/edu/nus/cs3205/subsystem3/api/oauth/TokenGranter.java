@@ -30,7 +30,7 @@ public class TokenGranter {
     }
 
     @POST
-    public Response grant(GrantRequest request, @HeaderParam("X-NFC-Token") String nfcToken) {
+    public Response grant(final GrantRequest request, @HeaderParam("X-NFC-Token") final String nfcToken) {
         if (nfcToken == null) {
             throw new WebException(Response.Status.BAD_REQUEST, "Missing X-NFC-Token header");
         }
@@ -41,7 +41,8 @@ public class TokenGranter {
         } else if (request.grantType == GrantType.PASSWORD) {
             if (request.username != null && request.passhash != null) {
                 try {
-                    String jwt = TokenUtils.createJWT(request);
+                    request.userId = 1;
+                    final String jwt = TokenUtils.createJWT(request);
                     return Response.ok(new PasswordGrant(jwt)).build();
                 } catch (JsonProcessingException | InvalidKeyException e) {
                     throw new WebException(e);

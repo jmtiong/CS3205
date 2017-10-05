@@ -13,7 +13,7 @@ public class DB {
     private static Connection conn = null;
     private static String connectURL = "java:comp/env/jdbc/TestDB";
 
-    public static void setConfiguration(String connectionURL) {
+    public static void setConfiguration(final String connectionURL) {
         connectURL = connectionURL;
     }
 
@@ -31,7 +31,7 @@ public class DB {
                 initContext = new InitialContext();
                 // connection = "java:comp/env/jdbc/TestDB"
                 datasource = (DataSource) initContext.lookup(connectURL);
-            } catch (Exception e) {
+            } catch (final Exception e) {
                 e.printStackTrace();
             }
         }

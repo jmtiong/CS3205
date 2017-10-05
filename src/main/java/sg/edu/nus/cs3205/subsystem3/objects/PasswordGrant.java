@@ -4,7 +4,7 @@ public class PasswordGrant {
     public final String tokenType = "Bearer";
     public String accessToken;
 
-    public PasswordGrant(String jwt) {
+    public PasswordGrant(final String jwt) {
         this.accessToken = jwt;
     }
 

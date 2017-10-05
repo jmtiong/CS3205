@@ -12,15 +12,15 @@ public class TokenConfigs {
     private TokenConfigs() {
     }
 
-    public static String getConfig(String key) {
+    public static String getConfig(final String key) {
         try {
             return RESOURCE_BUNDLE.getString(key);
-        } catch (MissingResourceException e) {
+        } catch (final MissingResourceException e) {
             return '!' + key + '!';
         }
     }
 
-    public static <T> T getConfig(String key, Class<T> clazz) {
+    public static <T> T getConfig(final String key, final Class<T> clazz) {
         if (clazz == byte[].class) {
             return clazz.cast(getConfig(key).getBytes(StandardCharsets.UTF_8));
         } else if (clazz == long.class || clazz == Long.class) {
