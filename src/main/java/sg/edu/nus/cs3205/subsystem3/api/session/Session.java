@@ -25,27 +25,27 @@ import sg.edu.nus.cs3205.subsystem3.objects.Links;
 @Consumes(MediaType.APPLICATION_OCTET_STREAM)
 @Produces(MediaType.APPLICATION_JSON)
 public class Session {
-    public static enum UploadType {
+    public static enum SessionType {
         HEART("heart", "heartservice"), STEP("step", "steps"), IMAGE("image"), VIDEO("video");
 
         public String pathPrefix;
         public String resourceServerPath;
 
-        private UploadType(final String path) {
+        private SessionType(final String path) {
             this(path, path);
         }
 
-        private UploadType(final String pathPrefix, final String resourceServerPath) {
+        private SessionType(final String pathPrefix, final String resourceServerPath) {
             this.pathPrefix = pathPrefix;
             this.resourceServerPath = resourceServerPath;
         }
 
-        public static UploadType fromString(final String value) {
+        public static SessionType fromString(final String value) {
             try {
-                return Stream.of(UploadType.values()).filter(type -> value.startsWith(type.pathPrefix))
+                return Stream.of(SessionType.values()).filter(type -> value.startsWith(type.pathPrefix))
                         .findAny().get();
             } catch (NullPointerException | NoSuchElementException e) {
-                throw new IllegalArgumentException(String.format("Invalid upload type %s in path", value));
+                throw new IllegalArgumentException(String.format("Invalid session type %s in path", value));
             }
         }
 
@@ -55,7 +55,7 @@ public class Session {
         }
     }
 
-    private static final String RESOURCE_SERVER_UPLOAD_PATH = "http://cs3205-4-i.comp.nus.edu.sg/api/team3";;
+    private static final String RESOURCE_SERVER_SESSION_PATH = "http://cs3205-4-i.comp.nus.edu.sg/api/team3";;
 
     private final Integer userID;
 
@@ -71,29 +71,30 @@ public class Session {
         return Response
                 .ok(new Links(
                         Stream.concat(Stream.of(Links.newLink(this.uri, "", "self", "GET")),
-                                Stream.of(UploadType.values()).map(type -> Links.newLink(this.uri,
-                                        type.toString(), "upload." + type, "POST")))
+                                Stream.of(SessionType.values())
+                                        .map(type -> Links.newLink(this.uri, type.toString(),
+                                                "session." + type, "GET,POST")))
                                 .toArray(Link[]::new)))
                 .build();
     }
 
     @GET
     @Path("/{type}")
-    public Response get(@PathParam("type") final UploadType type) {
-        final Invocation.Builder client = ClientBuilder.newClient().target(String.format("%s/%s/%d/all",
-                RESOURCE_SERVER_UPLOAD_PATH, type.resourceServerPath, this.userID))
+    public Response get(@PathParam("type") final SessionType type) {
+        String target = String.format("%s/%s/%d/all", RESOURCE_SERVER_SESSION_PATH, type.resourceServerPath,
+                this.userID);
+        final Invocation.Builder client = ClientBuilder.newClient().target(target)
                 .request(MediaType.APPLICATION_JSON);
-        System.out.println(String.format("Requesting %s/%s/%d/all", RESOURCE_SERVER_UPLOAD_PATH,
-                type.resourceServerPath, this.userID));
+        System.out.println("GET " + target);
         return client.get();
     }
 
     @POST
     @Path("/{type}")
-    public Response upload(@PathParam("type") final UploadType type,
+    public Response upload(@PathParam("type") final SessionType type,
             @QueryParam("timestamp") final long timestamp, final InputStream requestStream) {
         final String target;
-        if (type == UploadType.HEART) {
+        if (type == SessionType.HEART) {
             final Scanner scanner = new Scanner(requestStream);
             if (!scanner.hasNext()) {
                 scanner.close();
@@ -102,15 +103,15 @@ public class Session {
                 scanner.close();
                 throw new WebException(Response.Status.BAD_REQUEST, "Heart rate should be an integer");
             }
-            target = String.format("%s/%s/%d/%d/%d", RESOURCE_SERVER_UPLOAD_PATH, type.resourceServerPath,
+            target = String.format("%s/%s/%d/%d/%d", RESOURCE_SERVER_SESSION_PATH, type.resourceServerPath,
                     this.userID, scanner.nextInt(), timestamp);
             scanner.close();
         } else {
-            target = String.format("%s/%s/%d/upload/%d", RESOURCE_SERVER_UPLOAD_PATH, type.resourceServerPath,
-                    this.userID, timestamp);
+            target = String.format("%s/%s/%d/upload/%d", RESOURCE_SERVER_SESSION_PATH,
+                    type.resourceServerPath, this.userID, timestamp);
         }
         final Invocation.Builder client = ClientBuilder.newClient().target(target).request();
-        System.out.println(target);
+        System.out.println("POST " + target);
         // TODO Add in the headers for server 4 verification in the future
         final Response response = client.post(null);
         // TODO Custom response
@@ -120,7 +121,7 @@ public class Session {
     @Deprecated
     @POST
     @Path("/{type}/{timestamp}")
-    public Response upload2(@PathParam("type") final UploadType type,
+    public Response upload2(@PathParam("type") final SessionType type,
             @PathParam("timestamp") final long timestamp, final InputStream requestStream) {
         return this.upload(type, timestamp, requestStream);
     }
