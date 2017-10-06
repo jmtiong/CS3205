@@ -13,6 +13,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.Invocation;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -55,7 +56,7 @@ public class Session {
         }
     }
 
-    private static final String RESOURCE_SERVER_SESSION_PATH = "http://cs3205-4-i.comp.nus.edu.sg/api/team3";;
+    private static final String RESOURCE_SERVER_SESSION_PATH = "http://cs3205-4-i.comp.nus.edu.sg/api/team3";
 
     private final Integer userID;
 
@@ -84,7 +85,7 @@ public class Session {
         String target = String.format("%s/%s/%d/all", RESOURCE_SERVER_SESSION_PATH, type.resourceServerPath,
                 this.userID);
         final Invocation.Builder client = ClientBuilder.newClient().target(target)
-                .request(MediaType.APPLICATION_JSON);
+                .request(MediaType.APPLICATION_JSON_TYPE);
         System.out.println("GET " + target);
         return client.get();
     }
@@ -113,7 +114,8 @@ public class Session {
         final Invocation.Builder client = ClientBuilder.newClient().target(target).request();
         System.out.println("POST " + target);
         // TODO Add in the headers for server 4 verification in the future
-        final Response response = client.post(null);
+        final Response response = client.post(Entity.entity(type == SessionType.HEART ? null : requestStream,
+                MediaType.APPLICATION_OCTET_STREAM_TYPE));
         // TODO Custom response
         return response;
     }

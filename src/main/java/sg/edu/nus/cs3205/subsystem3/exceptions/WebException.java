@@ -24,7 +24,7 @@ public class WebException extends WebApplicationException {
 
     public WebException(final Throwable cause, final Status status, final String errorMessage) {
         this(cause, Response.status(status).entity(new ErrorResponse(errorMessage))
-                .type(MediaType.APPLICATION_JSON).build());
+                .type(MediaType.APPLICATION_JSON_TYPE).build());
     }
 
     public WebException(final Status status, final String errorMessage) {
