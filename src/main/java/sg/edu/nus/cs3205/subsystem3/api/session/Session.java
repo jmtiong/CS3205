@@ -85,7 +85,7 @@ public class Session {
         String target = String.format("%s/%s/%d/all", RESOURCE_SERVER_SESSION_PATH, type.resourceServerPath,
                 this.userID);
         final Invocation.Builder client = ClientBuilder.newClient().target(target)
-                .request(MediaType.APPLICATION_JSON);
+                .request(MediaType.APPLICATION_JSON_TYPE);
         System.out.println("GET " + target);
         return client.get();
     }
