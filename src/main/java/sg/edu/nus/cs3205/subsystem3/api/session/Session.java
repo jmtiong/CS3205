@@ -13,6 +13,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.Invocation;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -113,7 +114,8 @@ public class Session {
         final Invocation.Builder client = ClientBuilder.newClient().target(target).request();
         System.out.println("POST " + target);
         // TODO Add in the headers for server 4 verification in the future
-        final Response response = client.post(null);
+        final Response response = client
+                .post(Entity.entity(requestStream, MediaType.APPLICATION_OCTET_STREAM_TYPE));
         // TODO Custom response
         return response;
     }
