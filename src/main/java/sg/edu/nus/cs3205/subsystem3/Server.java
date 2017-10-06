@@ -62,11 +62,4 @@ public class Server {
 
         return new Session(claim.userId);
     }
-
-    @Deprecated
-    @Path("/upload")
-    public Session upload(@HeaderParam("Authorization") final String accessToken,
-            @HeaderParam("X-NFC-Token") final String nfcToken) {
-        return this.session(accessToken, nfcToken);
-    }
 }

@@ -118,12 +118,4 @@ public class Session {
         // TODO Custom response
         return response;
     }
-
-    @Deprecated
-    @POST
-    @Path("/{type}/{timestamp}")
-    public Response upload2(@PathParam("type") final SessionType type,
-            @PathParam("timestamp") final long timestamp, final InputStream requestStream) {
-        return this.upload(type, timestamp, requestStream);
-    }
 }
