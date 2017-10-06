@@ -7,6 +7,7 @@ import java.util.stream.Stream;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
+import javax.ws.rs.HttpMethod;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -69,10 +70,10 @@ public class Session {
     public Response get(@Context final UriInfo uri) {
         return Response
                 .ok(new Links(Stream
-                        .concat(Stream.of(Links.newLink(uri, "", "self", "GET")),
+                        .concat(Stream.of(Links.newLink(uri, "", "self", HttpMethod.GET)),
                                 Stream.of(SessionType.values())
                                         .map(type -> Links.newLink(uri, type.toString(), "session." + type,
-                                                "GET,POST")))
+                                                HttpMethod.GET + ',' + HttpMethod.POST)))
                         .toArray(Link[]::new)))
                 .build();
     }
@@ -84,7 +85,7 @@ public class Session {
                 this.userID);
         final Invocation.Builder client = ClientBuilder.newClient().target(target)
                 .request(MediaType.APPLICATION_JSON_TYPE);
-        System.out.println("GET " + target);
+        System.out.println(HttpMethod.GET + ' ' + target);
         return client.get();
     }
 
@@ -110,7 +111,7 @@ public class Session {
                     type.resourceServerPath, this.userID, timestamp);
         }
         final Invocation.Builder client = ClientBuilder.newClient().target(target).request();
-        System.out.println("POST " + target);
+        System.out.println(HttpMethod.POST + ' ' + target);
         // TODO Add in the headers for server 4 verification in the future
         final Response response = client.post(Entity.entity(type == SessionType.HEART ? null : requestStream,
                 MediaType.APPLICATION_OCTET_STREAM_TYPE));
