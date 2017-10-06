@@ -21,14 +21,12 @@ import sg.edu.nus.cs3205.subsystem3.util.security.TokenUtils;
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 public class Server {
-    @Context
-    UriInfo uri;
 
     @GET
-    public Response getRoot() {
-        return Response.ok(new Links(Links.newLink(this.uri, "", "self", "GET"),
-                Links.newLink(this.uri, "oauth/token", "oauth.token", "POST"),
-                Links.newLink(this.uri, "upload", "upload", "POST"))).build();
+    public Response getRoot(@Context final UriInfo uri) {
+        return Response.ok(new Links(Links.newLink(uri, "", "self", "GET"),
+                Links.newLink(uri, "oauth/token", "oauth.token", "POST"),
+                Links.newLink(uri, "session", "session", "POST"))).build();
     }
 
     @Path("/oauth/token")
@@ -60,7 +58,7 @@ public class Server {
             throw new WebException(Response.Status.UNAUTHORIZED, "Invalid NFC token");
         }
 
-        return new Session(this.uri, claim.userId);
+        return new Session(claim.userId);
     }
 
     @Deprecated

@@ -15,6 +15,7 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.Invocation;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
@@ -60,22 +61,19 @@ public class Session {
 
     private final Integer userID;
 
-    private final UriInfo uri;
-
-    public Session(final UriInfo uri, final int userID) {
-        this.uri = uri;
+    public Session(final int userID) {
         this.userID = userID;
     }
 
     @GET
-    public Response get() {
+    public Response get(@Context final UriInfo uri) {
         return Response
-                .ok(new Links(
-                        Stream.concat(Stream.of(Links.newLink(this.uri, "", "self", "GET")),
+                .ok(new Links(Stream
+                        .concat(Stream.of(Links.newLink(uri, "", "self", "GET")),
                                 Stream.of(SessionType.values())
-                                        .map(type -> Links.newLink(this.uri, type.toString(),
-                                                "session." + type, "GET,POST")))
-                                .toArray(Link[]::new)))
+                                        .map(type -> Links.newLink(uri, type.toString(), "session." + type,
+                                                "GET,POST")))
+                        .toArray(Link[]::new)))
                 .build();
     }
 
