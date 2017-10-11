@@ -4,7 +4,7 @@
 	<groupId>sg.edu.nus.cs3205</groupId>
 	<artifactId>subsystem3</artifactId>
 	<packaging>war</packaging>
-	<version>1.0-SNAPSHOT</version>
+	<version>1.0-a01</version>
 	<name>subsystem3</name>
 	<url>http://maven.apache.org</url>
 	<properties>
