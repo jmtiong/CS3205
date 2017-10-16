@@ -37,11 +37,23 @@ public class DB {
         }
     }
 
-    public static Connection getConnection() throws SQLException {
-        if (conn != null) {
-            return conn;
-        }
-        return (conn = datasource().getConnection());
+    ////////////////////////////////////////////////////////////////////////
+  	//
+  	// Database Connection and Execution
+  	//
+  	////////////////////////////////////////////////////////////////////////
+
+  	// Get the connection from tomcat and return the connection to the caller
+    public static Connection connectDatabase(){
+      if (conn != null){
+        return conn;
+      }
+  		try{
+  			conn = datasource().getConnection();
+  		}catch(Exception e){
+  			e.printStackTrace();
+  		}
+      return conn;
     }
 
 }
