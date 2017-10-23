@@ -37,12 +37,13 @@ import javax.ws.rs.client.Invocation;
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 public class TokenGranter {
+    static final class SupportedGrantTypes {
+        public GrantType[] supportedGrantTypes = GrantRequest.GrantType.values();
+    }
+
     @GET
     public Response get() {
-        return Response.ok(new Object() {
-            @SuppressWarnings("unused")
-            public GrantType[] supportedGrantTypes = GrantRequest.GrantType.values();
-        }).build();
+        return Response.ok(new SupportedGrantTypes()).build();
     }
 
     @POST
