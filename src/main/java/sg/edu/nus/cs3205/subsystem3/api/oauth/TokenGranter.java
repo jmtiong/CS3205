@@ -23,8 +23,6 @@ import sg.edu.nus.cs3205.subsystem3.objects.GrantRequest.GrantType;
 import sg.edu.nus.cs3205.subsystem3.objects.PasswordGrant;
 import sg.edu.nus.cs3205.subsystem3.util.security.TokenUtils;
 
-import sg.edu.nus.cs3205.subsystem3.util.Challenge;
-
 import sg.edu.nus.cs3205.subsystem3.dao.DB;
 
 
