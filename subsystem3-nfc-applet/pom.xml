@@ -12,6 +12,9 @@
 	<url>https://cs3205-3.comp.nus.edu.sg/admin</url>
 	<name>NFC Registration Applet</name>
 	<description>NFC Registration Applet for writing, reading and registering patient NFC tags</description>
+	<properties>
+		<jersey.version>2.26</jersey.version>
+	</properties>
 	<dependencies>
 		<dependency>
 			<groupId>org.nfctools</groupId>
@@ -23,6 +26,22 @@
 			<artifactId>logback-classic</artifactId>
 			<version>0.9.18</version>
 		</dependency>
+		<dependency>
+			<groupId>org.glassfish.jersey.core</groupId>
+			<artifactId>jersey-client</artifactId>
+			<version>${jersey.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.glassfish.jersey.inject</groupId>
+			<artifactId>jersey-hk2</artifactId>
+			<version>${jersey.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.glassfish.jersey.media</groupId>
+			<artifactId>jersey-media-json-jackson</artifactId>
+			<version>${jersey.version}</version>
+		</dependency>
+
 	</dependencies>
 	<build>
 		<plugins>
