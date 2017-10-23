@@ -15,8 +15,18 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
-import javax.swing.JTextArea;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.ListSelectionModel;
+import javax.swing.RowFilter;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.table.AbstractTableModel;
+import javax.swing.table.TableModel;
+import javax.swing.table.TableRowSorter;
 
 public class NFCApplet extends JFrame {
     private static final long serialVersionUID = 3899822683922114716L;
@@ -32,9 +42,9 @@ public class NFCApplet extends JFrame {
     }
 
     private void start() {
-        NFCPanel newContentPane = new NFCPanel();
-        newContentPane.setOpaque(true);
-        this.setContentPane(newContentPane);
+        NFCPanel mainPanel = new NFCPanel();
+        mainPanel.setOpaque(true);
+        this.setContentPane(mainPanel);
 
         this.pack();
         this.setLocationRelativeTo(null);
@@ -43,8 +53,9 @@ public class NFCApplet extends JFrame {
 
     public static class NFCPanel extends JPanel implements ActionListener {
         private static final long serialVersionUID = -4443552310769524926L;
+        public static final String LOGIN = "LOGIN";
         private LoginPanel loginPanel;
-        private RegistrationPanel nfcPanel;
+        private RegistrationPanel registrationPanel;
 
         public NFCPanel() {
             super(new BorderLayout());
@@ -58,38 +69,131 @@ public class NFCApplet extends JFrame {
         public void actionPerformed(ActionEvent e) {
             String command = e.getActionCommand();
 
-            if ("LOGIN".equals(command)) {
-                remove(this.loginPanel);
-                revalidate();
-                this.nfcPanel = new RegistrationPanel(this);
-                this.add(this.nfcPanel, BorderLayout.CENTER);
+            if (LOGIN.equals(command)) {
+                this.remove(this.loginPanel);
+                this.revalidate();
+                this.registrationPanel = new RegistrationPanel(this);
+                this.add(this.registrationPanel, BorderLayout.CENTER);
             } else if ("READ".equalsIgnoreCase(command)) {
-                NFCService.readData(
-                        data -> this.nfcPanel.textRead.setText(String.join(System.lineSeparator(), data)));
+                // NFCService.readData(data -> this.registrationPanel.textRead
+                // .setText(String.join(System.lineSeparator(), data)));
             } else if ("WRITE".equalsIgnoreCase(command)) {
-                NFCService.writeData(this.nfcPanel.textWrite.getText());
+                // NFCService.writeData(this.registrationPanel.textWrite.getText());
             } else {
-                this.nfcPanel.textRead.setText(this.nfcPanel.textWrite.getText());
+                // this.registrationPanel.textRead.setText(this.registrationPanel.textWrite.getText());
             }
         }
     }
 
-    public static class RegistrationPanel extends JPanel {
+    public static class RegistrationPanel extends JPanel implements ActionListener {
+        private static final String REGISTER = "REGISTER";
         private static final long serialVersionUID = -7314885421740232209L;
-        public JTextArea textRead = new JTextArea("");
-        private JButton buttonRead = new JButton("Read");
-        private JTextField textWrite = new JTextField(20);
-        private JButton buttonWrite = new JButton("Write");
+        private JTextField searchTextField;
+        protected User[] users = new User[0];
+        private JTable usersTable;
+        private TableRowSorter<TableModel> sorter;
+        private JLabel selectedLabel;
 
         public RegistrationPanel(ActionListener aL) {
-            super(new GridLayout(2, 0));
-            textRead.setEditable(false);
-            buttonRead.addActionListener(aL);
-            buttonWrite.addActionListener(aL);
-            this.add(textRead);
-            this.add(buttonRead);
-            this.add(textWrite);
-            this.add(buttonWrite);
+            super(new BorderLayout());
+            ServerConnector.getUsers(users -> {
+                this.users = users.users;
+                ((AbstractTableModel) usersTable.getModel()).fireTableDataChanged();
+            });
+            JPanel searchPanel = new JPanel();
+            JLabel searchLabel = new JLabel("Filter Name/Username");
+            searchPanel.add(searchLabel);
+            searchTextField = new JTextField(20);
+            searchTextField.getDocument().addDocumentListener(new DocumentListener() {
+                @Override
+                public void removeUpdate(DocumentEvent arg0) {
+                    newFilter();
+                }
+
+                @Override
+                public void insertUpdate(DocumentEvent arg0) {
+                    newFilter();
+                }
+
+                @Override
+                public void changedUpdate(DocumentEvent arg0) {
+                    newFilter();
+                }
+            });
+            searchPanel.add(searchTextField);
+
+            usersTable = new JTable(new AbstractTableModel() {
+                private static final long serialVersionUID = 976597182178888195L;
+
+                @Override
+                public int getRowCount() {
+                    return users.length;
+                }
+
+                @Override
+                public int getColumnCount() {
+                    return User.FIELDS.length;
+                }
+
+                @Override
+                public String getColumnName(int col) {
+                    return User.FIELDS[col];
+                }
+
+                @Override
+                public Object getValueAt(int row, int col) {
+                    return users[row].get(col);
+                }
+            });
+            this.sorter = new TableRowSorter<TableModel>(usersTable.getModel());
+            usersTable.setRowSorter(this.sorter);
+            usersTable.setPreferredScrollableViewportSize(new Dimension(800, 70));
+            usersTable.setFillsViewportHeight(true);
+            usersTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+            usersTable.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+                @Override
+                public void valueChanged(ListSelectionEvent event) {
+                    int viewRow = usersTable.getSelectedRow();
+                    if (viewRow < 0) {
+                        // Selection got filtered away.
+                        selectedLabel.setText("Nothing selected");
+                    } else {
+                        int modelRow = usersTable.convertRowIndexToModel(viewRow);
+                        selectedLabel
+                                .setText(String.format("Selected username: %s", users[modelRow].username));
+                    }
+                }
+            });
+            JScrollPane tableContainer = new JScrollPane(usersTable);
+
+            JPanel selectedPanel = new JPanel(new GridLayout(1, 2));
+            selectedLabel = new JLabel("Nothing selected yet");
+            selectedPanel.add(selectedLabel);
+            JButton selectedButton = new JButton("Generate, register and write NFC secret");
+            selectedButton.setActionCommand(REGISTER);
+            selectedButton.addActionListener(this);
+            selectedPanel.add(selectedButton);
+
+            this.add(searchPanel, BorderLayout.NORTH);
+            this.add(tableContainer, BorderLayout.CENTER);
+            this.add(selectedPanel, BorderLayout.SOUTH);
+        }
+
+        private void newFilter() {
+            RowFilter<TableModel, Integer> rf = null;
+            try {
+                rf = RowFilter.regexFilter("(?i)" + searchTextField.getText(), 0, 1, 2);
+            } catch (java.util.regex.PatternSyntaxException e) {
+                return;
+            }
+            this.sorter.setRowFilter(rf);
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent actionEvent) {
+            if (REGISTER.equals(actionEvent.getActionCommand())) {
+
+            }
         }
     }
 
@@ -123,7 +227,7 @@ public class NFCApplet extends JFrame {
             constraints.gridx = 1;
             add(fieldPassword, constraints);
 
-            buttonLogin.setActionCommand("LOGIN");
+            buttonLogin.setActionCommand(NFCPanel.LOGIN);
             buttonLogin.addActionListener(aL);
 
             constraints.gridx = 0;
