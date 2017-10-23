@@ -1,5 +1,11 @@
 package sg.edu.nus.cs3205.subsystem3;
 
+import java.io.IOException;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.container.ContainerRequestContext;
+import javax.ws.rs.container.ContainerRequestFilter;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
@@ -16,11 +22,28 @@ import sg.edu.nus.cs3205.subsystem3.objects.ErrorResponse;
 
 @Provider
 public class Subsystem3Provider extends JacksonJsonProvider
-        implements ExceptionMapper<JsonProcessingException> {
+        implements ExceptionMapper<JsonProcessingException>, ContainerRequestFilter {
+    @Context
+    private HttpServletRequest request;
+
     public Subsystem3Provider() {
         super(new ObjectMapper().setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE)
                 .enable(MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS)
                 .enable(DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_AS_NULL));
+    }
+
+    @Override
+    public synchronized void filter(ContainerRequestContext requestContext) throws IOException {
+        String remote = request.getRemoteHost();
+        if (remote == null) {
+            remote = request.getRemoteAddr();
+        }
+        String local = request.getLocalName();
+        if (local == null) {
+            local = request.getLocalAddr();
+        }
+        System.out.printf("%s from %s:%d to %s:%d\n", requestContext.getDate(), remote,
+                request.getRemotePort(), local, request.getLocalPort());
     }
 
     @Override

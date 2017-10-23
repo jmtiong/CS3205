@@ -3,9 +3,11 @@ package sg.edu.nus.cs3205.subsystem3;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
+import javax.ws.rs.HttpMethod;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
@@ -21,14 +23,12 @@ import sg.edu.nus.cs3205.subsystem3.util.security.TokenUtils;
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 public class Server {
-    @Context
-    UriInfo uri;
 
     @GET
-    public Response getRoot() {
-        return Response.ok(new Links(Links.newLink(this.uri, "", "self", "GET"),
-                Links.newLink(this.uri, "oauth/token", "oauth.token", "POST"),
-                Links.newLink(this.uri, "upload", "upload", "POST"))).build();
+    public Response getRoot(@Context final UriInfo uri) {
+        return Response.ok(new Links(Links.newLink(uri, "", "self", HttpMethod.GET),
+                Links.newLink(uri, "oauth/token", "oauth.token", HttpMethod.POST),
+                Links.newLink(uri, "session", "session", HttpMethod.POST))).build();
     }
 
     @Path("/oauth/token")
@@ -37,7 +37,7 @@ public class Server {
     }
 
     @Path("/session")
-    public Session session(@HeaderParam("Authorization") final String accessToken,
+    public Session session(@HeaderParam(HttpHeaders.AUTHORIZATION) final String accessToken,
             @HeaderParam("X-NFC-Token") final String nfcToken) {
         GrantClaim claim;
         if (accessToken == null) {
@@ -60,13 +60,6 @@ public class Server {
             throw new WebException(Response.Status.UNAUTHORIZED, "Invalid NFC token");
         }
 
-        return new Session(this.uri, claim.userId);
-    }
-
-    @Deprecated
-    @Path("/upload")
-    public Session upload(@HeaderParam("Authorization") final String accessToken,
-            @HeaderParam("X-NFC-Token") final String nfcToken) {
-        return this.session(accessToken, nfcToken);
+        return new Session(claim.userId);
     }
 }
