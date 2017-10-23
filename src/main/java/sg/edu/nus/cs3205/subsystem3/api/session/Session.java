@@ -13,7 +13,9 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.Invocation;
+import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
@@ -26,7 +28,7 @@ import sg.edu.nus.cs3205.subsystem3.objects.Links;
 @Produces(MediaType.APPLICATION_JSON)
 public class Session {
     public static enum SessionType {
-        HEART("heart", "heartservice"), STEP("step", "steps"), IMAGE("image"), VIDEO("video");
+        HEART("heart"), STEP("step"), IMAGE("image"), VIDEO("video");
 
         public String pathPrefix;
         public String resourceServerPath;
@@ -55,7 +57,7 @@ public class Session {
         }
     }
 
-    private static final String RESOURCE_SERVER_SESSION_PATH = "http://cs3205-4-i.comp.nus.edu.sg/api/team3";;
+    private static final String RESOURCE_SERVER_SESSION_PATH = "http://cs3205-4-i.comp.nus.edu.sg/api/team3";
 
     private final Integer userID;
 
@@ -84,7 +86,7 @@ public class Session {
         String target = String.format("%s/%s/%d/all", RESOURCE_SERVER_SESSION_PATH, type.resourceServerPath,
                 this.userID);
         final Invocation.Builder client = ClientBuilder.newClient().target(target)
-                .request(MediaType.APPLICATION_JSON);
+                .request(MediaType.APPLICATION_JSON_TYPE);
         System.out.println("GET " + target);
         return client.get();
     }
@@ -94,26 +96,12 @@ public class Session {
     public Response upload(@PathParam("type") final SessionType type,
             @QueryParam("timestamp") final long timestamp, final InputStream requestStream) {
         final String target;
-        if (type == SessionType.HEART) {
-            final Scanner scanner = new Scanner(requestStream);
-            if (!scanner.hasNext()) {
-                scanner.close();
-                throw new WebException(Response.Status.BAD_REQUEST, "Provide heart rate in body");
-            } else if (!scanner.hasNextInt()) {
-                scanner.close();
-                throw new WebException(Response.Status.BAD_REQUEST, "Heart rate should be an integer");
-            }
-            target = String.format("%s/%s/%d/%d/%d", RESOURCE_SERVER_SESSION_PATH, type.resourceServerPath,
-                    this.userID, scanner.nextInt(), timestamp);
-            scanner.close();
-        } else {
             target = String.format("%s/%s/%d/upload/%d", RESOURCE_SERVER_SESSION_PATH,
                     type.resourceServerPath, this.userID, timestamp);
-        }
         final Invocation.Builder client = ClientBuilder.newClient().target(target).request();
         System.out.println("POST " + target);
         // TODO Add in the headers for server 4 verification in the future
-        final Response response = client.post(null);
+        final Response response = client.post(Entity.entity(requestStream, MediaType.APPLICATION_OCTET_STREAM));
         // TODO Custom response
         return response;
     }

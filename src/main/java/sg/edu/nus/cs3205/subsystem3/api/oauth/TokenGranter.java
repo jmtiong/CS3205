@@ -23,6 +23,11 @@ import sg.edu.nus.cs3205.subsystem3.objects.GrantRequest.GrantType;
 import sg.edu.nus.cs3205.subsystem3.objects.PasswordGrant;
 import sg.edu.nus.cs3205.subsystem3.util.security.TokenUtils;
 
+<<<<<<< HEAD
+=======
+import sg.edu.nus.cs3205.subsystem3.util.Challenge;
+
+>>>>>>> master
 import sg.edu.nus.cs3205.subsystem3.dao.DB;
 
 
@@ -96,6 +101,7 @@ public class TokenGranter {
                       throw new WebException(e);
                   }
                 }
+              }
             }
             throw new WebException(Response.Status.UNAUTHORIZED, "Invalid credential");
         }
