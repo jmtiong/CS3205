@@ -30,9 +30,9 @@ import java.util.Base64;
 import java.util.Arrays;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-// import javax.ws.rs.client.ClientBuilder;
-// import javax.ws.rs.client.Entity;
-// import javax.ws.rs.client.Invocation;
+import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.client.Entity;
+import javax.ws.rs.client.Invocation;
 
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
@@ -63,10 +63,10 @@ public class TokenGranter {
                   // Put challenge to jObj
                   jObj.put("challenge", Base64.getEncoder().encodeToString(challenge));
                   // Obtain salt from server 4
-                  jObj.put("salt", "getUserSalt(request.username)");
+                  jObj.put("salt", getUserSalt(request.username));
                   try{
                     return Response.status(401)
-                            .header("WWW-AUTHENTICATE", mapper.writeValueAsString(jObj))
+                            .header("www-authenticate", mapper.writeValueAsString(jObj))
                             .entity("Missing Authorization Header.").build();
                   } catch(Exception e){
                     e.printStackTrace();
@@ -86,7 +86,7 @@ public class TokenGranter {
               byte[] response = Base64.getDecoder().decode(authHeader[1].getBytes());
               byte[] challenge = getUserChallenge(request.username);
               // get from server 4
-              byte[] passwordHash = null;
+              byte[] passwordHash = Base64.getDecoder().decode(getUserPasswordHash(request.username).getBytes());
               if(Challenge.validateResponse(response, challenge, passwordHash)){
                 try {
                     request.userId = 1;
@@ -148,6 +148,32 @@ public class TokenGranter {
         return null;
     }
 
-    private static final String RESOURCE_SERVER_SESSION_PATH = "http://cs3205-4-i.comp.nus.edu.sg/api/team3/";
+    private static final String RESOURCE_SERVER_SESSION_PATH = "http://cs3205-4-i.comp.nus.edu.sg/api/team3";
 
+    private String getUserSalt(String username){
+      final String target;
+          target = String.format("%s/%s?username=%s&attribute=%s", RESOURCE_SERVER_SESSION_PATH,
+                  "user", username, "salt2");
+      final Invocation.Builder client = ClientBuilder.newClient().target(target).request();
+      System.out.println("POST " + target);
+      // TODO Add in the headers for server 4 verification in the future
+      final Response response = client.get();
+      String rawResponse = response.readEntity(String.class);
+      System.out.println(rawResponse);
+      return rawResponse;
+    }
+
+    private String getUserPasswordHash(String username){
+      final String target;
+          target = String.format("%s/%s?username=%s&attribute=%s", RESOURCE_SERVER_SESSION_PATH,
+                  "user", username, "password2");
+      final Invocation.Builder client = ClientBuilder.newClient().target(target).request();
+      System.out.println("POST " + target);
+      // TODO Add in the headers for server 4 verification in the future
+      final Response response = client.get();
+      String rawResponse = response.readEntity(String.class);
+      System.out.println(rawResponse);
+      return rawResponse;
+
+    }
 }
