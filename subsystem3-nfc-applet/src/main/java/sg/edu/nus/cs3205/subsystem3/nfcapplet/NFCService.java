@@ -2,6 +2,7 @@ package sg.edu.nus.cs3205.subsystem3.nfcapplet;
 
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 import javax.smartcardio.Card;
 import javax.smartcardio.CardException;
@@ -48,15 +49,18 @@ public class NFCService {
         });
     }
 
-    public static void writeData(final String data) {
+    public static void writeData(final Runnable prehandler, final Runnable handler, final String... data) {
         startListeningOnce(ndefOperations -> {
             if (ndefOperations.isWritable()) {
-                final TextRecord textRecord = new TextRecord(data);
+                prehandler.run();
+                final TextRecord[] textRecords = Stream.of(data).map(text -> new TextRecord(text))
+                        .toArray(TextRecord[]::new);
                 if (ndefOperations.isFormatted()) {
-                    ndefOperations.writeNdefMessage(textRecord);
+                    ndefOperations.writeNdefMessage(textRecords);
                 } else {
-                    ndefOperations.format(textRecord);
+                    ndefOperations.format(textRecords);
                 }
+                handler.run();
             } else {
                 System.out.println("Tag not writable");
             }
@@ -75,7 +79,6 @@ public class NFCService {
                         this.tagScanner.setTagListener(tagListener);
                     }
 
-                    @SuppressWarnings("restriction")
                     @Override
                     public void setMode(final TerminalMode terminalMode,
                             final TagScannerListener tagScannerListener) {

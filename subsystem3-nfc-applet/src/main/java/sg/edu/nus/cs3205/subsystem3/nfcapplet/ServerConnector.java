@@ -13,16 +13,30 @@ public class ServerConnector {
 
     public static Future<Users> getUsers(final Consumer<Users> callback) {
         Builder builder = client.target("http://cs3205-4-i.comp.nus.edu.sg/api/team1/user/").request();
-        /*
-         * if (1 > 0) { final CompletableFuture<User[]> completedFuture =
-         * CompletableFuture.<User[]>
-         * completedFuture(builder.get(User[].class)); return completedFuture; }
-         */
         return builder.async().get(new InvocationCallback<Users>() {
 
             @Override
             public void completed(Users users) {
                 callback.accept(users);
+            }
+
+            @Override
+            public void failed(Throwable t) {
+                t.printStackTrace();
+                throw new RuntimeException(t);
+            }
+        });
+    }
+
+    public static Future<String> generateNFCSecret(final String user, final Consumer<String> callback) {
+        Builder builder = client
+                .target("http://cs3205-4-i.comp.nus.edu.sg/api/team3/user/populateNFC?username=" + user)
+                .request();
+        return builder.async().get(new InvocationCallback<String>() {
+
+            @Override
+            public void completed(String secret) {
+                callback.accept(secret);
             }
 
             @Override

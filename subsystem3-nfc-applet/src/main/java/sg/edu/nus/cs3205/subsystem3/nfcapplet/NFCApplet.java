@@ -74,31 +74,26 @@ public class NFCApplet extends JFrame {
                 this.revalidate();
                 this.registrationPanel = new RegistrationPanel(this);
                 this.add(this.registrationPanel, BorderLayout.CENTER);
-            } else if ("READ".equalsIgnoreCase(command)) {
-                // NFCService.readData(data -> this.registrationPanel.textRead
-                // .setText(String.join(System.lineSeparator(), data)));
-            } else if ("WRITE".equalsIgnoreCase(command)) {
-                // NFCService.writeData(this.registrationPanel.textWrite.getText());
-            } else {
-                // this.registrationPanel.textRead.setText(this.registrationPanel.textWrite.getText());
             }
         }
     }
 
     public static class RegistrationPanel extends JPanel implements ActionListener {
-        private static final String REGISTER = "REGISTER";
         private static final long serialVersionUID = -7314885421740232209L;
+        protected static final String REGISTER = "REGISTER";
         private JTextField searchTextField;
         protected User[] users = new User[0];
         private JTable usersTable;
         private TableRowSorter<TableModel> sorter;
         private JLabel selectedLabel;
+        private User selectedUser;
 
         public RegistrationPanel(ActionListener aL) {
             super(new BorderLayout());
             ServerConnector.getUsers(users -> {
                 this.users = users.users;
                 ((AbstractTableModel) usersTable.getModel()).fireTableDataChanged();
+                selectedLabel.setText("No user selected");
             });
             JPanel searchPanel = new JPanel();
             JLabel searchLabel = new JLabel("Filter Name/Username");
@@ -156,20 +151,19 @@ public class NFCApplet extends JFrame {
                     int viewRow = usersTable.getSelectedRow();
                     if (viewRow < 0) {
                         // Selection got filtered away.
-                        selectedLabel.setText("Nothing selected");
+                        selectedLabel.setText("No user selected");
                     } else {
-                        int modelRow = usersTable.convertRowIndexToModel(viewRow);
-                        selectedLabel
-                                .setText(String.format("Selected username: %s", users[modelRow].username));
+                        selectedUser = users[usersTable.convertRowIndexToModel(viewRow)];
+                        selectedLabel.setText(String.format("Selected username: %s", selectedUser.username));
                     }
                 }
             });
             JScrollPane tableContainer = new JScrollPane(usersTable);
 
             JPanel selectedPanel = new JPanel(new GridLayout(1, 2));
-            selectedLabel = new JLabel("Nothing selected yet");
+            selectedLabel = new JLabel("Fetching users list");
             selectedPanel.add(selectedLabel);
-            JButton selectedButton = new JButton("Generate, register and write NFC secret");
+            JButton selectedButton = new JButton("Generate and write NFC secret");
             selectedButton.setActionCommand(REGISTER);
             selectedButton.addActionListener(this);
             selectedPanel.add(selectedButton);
@@ -192,7 +186,14 @@ public class NFCApplet extends JFrame {
         @Override
         public void actionPerformed(ActionEvent actionEvent) {
             if (REGISTER.equals(actionEvent.getActionCommand())) {
-
+                if (selectedUser != null) {
+                    ServerConnector.generateNFCSecret(selectedUser.username, secret -> {
+                        selectedLabel.setText("Secret generated, tap your NFC card");
+                        NFCService.writeData(() -> selectedLabel.setText("Writing to NFC card"),
+                                () -> selectedLabel.setText("NFC card written, remove it"),
+                                selectedUser.username, secret);
+                    });
+                }
             }
         }
     }
