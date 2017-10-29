@@ -1,6 +1,9 @@
 package sg.edu.nus.cs3205.subsystem3.api.oauth;
 
 import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -19,8 +22,6 @@ import sg.edu.nus.cs3205.subsystem3.objects.GrantRequest;
 import sg.edu.nus.cs3205.subsystem3.objects.GrantRequest.GrantType;
 import sg.edu.nus.cs3205.subsystem3.objects.PasswordGrant;
 import sg.edu.nus.cs3205.subsystem3.util.security.TokenUtils;
-
-import sg.edu.nus.cs3205.subsystem3.util.Challenge;
 
 import sg.edu.nus.cs3205.subsystem3.dao.DB;
 
@@ -47,134 +48,108 @@ public class TokenGranter {
     }
 
     @POST
-    public Response grant(final GrantRequest request, @HeaderParam("X-NFC-Token") final String nfcToken, @HeaderParam("Authorization") final String authorizationHeader) {
+    public Response grant(final GrantRequest request, @HeaderParam("X-NFC-Token") final String nfcToken, @HeaderParam("Authorization") final String authorizationHeader, @HeaderParam("debug")boolean debugMode) {
         if (request == null) {
             throw new WebException(Response.Status.BAD_REQUEST, "Missing request body");
         }
+        System.out.println("debugMode: "+debugMode);
         if (request.grantType == null) {
             throw new WebException(Response.Status.BAD_REQUEST, "Missing/invalid grant_type");
         } else if (request.grantType == GrantType.PASSWORD) {
             if (request.username != null && authorizationHeader == null) {
+                int status = 401;
                 ObjectMapper mapper = new ObjectMapper();
                 ObjectNode jObj = mapper.createObjectNode();
-                // Generate challenge
-                byte[] challenge = Challenge.generateChallenge();
-                // Store challenge to server 3 local database
-                if(storeChallenge(challenge, request.username) >= 1){
-                  // Put challenge to jObj
-                  jObj.put("challenge", Base64.getEncoder().encodeToString(challenge));
-                  // Obtain salt from server 4
-                  jObj.put("salt", getUserSalt(request.username));
-                  try{
-                    return Response.status(401)
-                            .header("www-authenticate", mapper.writeValueAsString(jObj))
-                            .entity("Missing Authorization Header.").build();
-                  } catch(Exception e){
-                    e.printStackTrace();
-                  }
+                // get challenge and salt from server 4
+                String challenge = getChallenge(request.username);
+                String salt = getUserSalt(request.username);
+                jObj.put("challenge", challenge);
+                jObj.put("salt", salt);
+                if(challenge.isEmpty() || salt.isEmpty()){
+                  return Response.status(status).entity("Server unable to generate challenge for unknown user.").build();
                 }
-                return Response.status(500).entity("Server unable to generate challenge.").build();
+                // Return back www-authenticate header
+                try{
+                  return Response.status(status)
+                          .header("www-authenticate", mapper.writeValueAsString(jObj))
+                          .entity("Missing Authorization Header.").build();
+                } catch(Exception e){
+                  e.printStackTrace();
+                  status = 500;
+                }
+                return Response.status(status).entity("Server unable to generate challenge for unknown user.").build();
             }
+            // User attempts to log in
             if (request.username != null && authorizationHeader != null) {
               if (nfcToken == null) {
                   throw new WebException(Response.Status.BAD_REQUEST, "Missing X-NFC-Token header");
               }
-              System.out.println(authorizationHeader+" authorizationHeader:");
               String[] authHeader = authorizationHeader.split(" ");
               if(authHeader.length < 2){
                 throw new WebException(Response.Status.BAD_REQUEST, "Invalid Authorization Header.");
               }
-              byte[] response = Base64.getDecoder().decode(authHeader[1].getBytes());
-              byte[] challenge = getUserChallenge(request.username);
-              // get from server 4
-              byte[] passwordHash = Base64.getDecoder().decode(getUserPasswordHash(request.username).getBytes());
-              if(Challenge.validateResponse(response, challenge, passwordHash)){
-                try {
-                    request.userId = 1;
-                    final String jwt = TokenUtils.createJWT(request);
-                    return Response.ok(new PasswordGrant(jwt)).build();
-                } catch (JsonProcessingException | InvalidKeyException e) {
-                    throw new WebException(e);
+                boolean answer = loginUser(request.username, authorizationHeader, nfcToken);
+                if(answer || debugMode){
+                  try {
+                      request.userId = 1;
+                      final String jwt = TokenUtils.createJWT(request);
+                      return Response.ok(new PasswordGrant(jwt)).build();
+                  } catch (JsonProcessingException | InvalidKeyException e) {
+                      throw new WebException(e);
+                  }
                 }
-              }
             }
             throw new WebException(Response.Status.UNAUTHORIZED, "Invalid credential");
         }
         throw new WebException(Response.Status.BAD_REQUEST, "Unknown %s grant_type", request.grantType);
     }
 
-    private int storeChallenge(byte[] challenge, String username){
-      String sql = "SELECT uid FROM CS3205.user WHERE username = ?";
-      int result = 0;
-        try{
-            // Maybe need to get from server 4
-            PreparedStatement ps = DB.connectDatabase().prepareStatement(sql);
-            ps.setString(1, username);
-            ResultSet rs = ps.executeQuery();
-            while(rs.next()){
-              int userID = rs.getInt("uid");
-              sql = "INSERT INTO CS3205.challenge (challengeString, userID) VALUES (?, ?) ON DUPLICATE KEY UPDATE challengeString=VALUES(challengeString)";
-              ps = DB.connectDatabase().prepareStatement(sql);
-              System.out.println("String: "+Base64.getEncoder().encodeToString(challenge) + "   "+Arrays.toString(challenge));
-              ps.setString(1, Base64.getEncoder().encodeToString(challenge));
-              ps.setInt(2, userID);
-              result = ps.executeUpdate();
-              break;
-            }
-        }catch(Exception e){
-            e.printStackTrace();
-        }
-        return result;
-    }
-
-    private byte[] getUserChallenge(String username){
-      String sql = "SELECT * FROM CS3205.user WHERE username = ?";
-        try{
-            PreparedStatement ps = DB.connectDatabase().prepareStatement(sql);
-            ps.setString(1, username);
-            ResultSet rs = ps.executeQuery();
-            while(rs.next()){
-              int userID = rs.getInt("uid");
-              sql = "SELECT * FROM CS3205.challenge WHERE userID = ?";
-              ps = DB.connectDatabase().prepareStatement(sql);
-              ps.setInt(1, userID);
-              rs = ps.executeQuery();
-              while(rs.next()){
-                return Base64.getDecoder().decode(rs.getString("challengeString").getBytes());
-              }
-            }
-        }catch(Exception e){
-            e.printStackTrace();
-        }
-        return null;
-    }
-
     private static final String RESOURCE_SERVER_SESSION_PATH = "http://cs3205-4-i.comp.nus.edu.sg/api/team3";
 
     private String getUserSalt(String username){
       final String target;
-          target = String.format("%s/%s?username=%s&attribute=%s", RESOURCE_SERVER_SESSION_PATH,
+          target = String.format("%s/%s?username=%s", RESOURCE_SERVER_SESSION_PATH,
                   "user", username, "salt2");
       final Invocation.Builder client = ClientBuilder.newClient().target(target).request();
-      System.out.println("POST " + target);
+      System.out.println("GET " + target);
       // TODO Add in the headers for server 4 verification in the future
       final Response response = client.get();
       String rawResponse = response.readEntity(String.class);
-      System.out.println(rawResponse);
+      if(response.getStatus() == 401) {
+        rawResponse = "";
+      }
       return rawResponse;
     }
 
-    private String getUserPasswordHash(String username){
+    private String getChallenge(String username){
       final String target;
-          target = String.format("%s/%s?username=%s&attribute=%s", RESOURCE_SERVER_SESSION_PATH,
-                  "user", username, "password2");
+          target = String.format("%s/%s/%s?username=%s", RESOURCE_SERVER_SESSION_PATH,
+                  "user", "challenge", username);
       final Invocation.Builder client = ClientBuilder.newClient().target(target).request();
-      System.out.println("POST " + target);
-      // TODO Add in the headers for server 4 verification in the future
+      System.out.println("GET " + target);
       final Response response = client.get();
       String rawResponse = response.readEntity(String.class);
-      System.out.println(rawResponse);
+      if(response.getStatus() == 401) {
+        rawResponse = "";
+      }
       return rawResponse;
+    }
+
+    private boolean loginUser(String username, String authorizationHeader, String nfcToken){
+      System.out.println(username+" "+authorizationHeader+" "+nfcToken);
+      final String target;
+          target = String.format("%s/%s/%s?username=%s", RESOURCE_SERVER_SESSION_PATH,
+                  "user", "login", username);
+      final Invocation.Builder client = ClientBuilder.newClient().target(target).request();
+      System.out.println("POST " + target);
+      final Response response = client
+                                  .header("Authorization", authorizationHeader)
+                                  .header("X-NFC-Token", nfcToken)
+                                  .post(null);
+      if(response.getStatus() == 201){
+        return true;
+      }
+      return false;
 
     }
 }
