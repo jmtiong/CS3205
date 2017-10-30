@@ -20,8 +20,8 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
-import sg.edu.nus.cs3205.subsystem3.objects.Link;
-import sg.edu.nus.cs3205.subsystem3.objects.Links;
+import sg.edu.nus.cs3205.subsystem3.pojos.Link;
+import sg.edu.nus.cs3205.subsystem3.pojos.Links;
 
 @Consumes(MediaType.APPLICATION_OCTET_STREAM)
 @Produces(MediaType.APPLICATION_JSON)

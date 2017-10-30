@@ -1,4 +1,4 @@
-package sg.edu.nus.cs3205.subsystem3.objects;
+package sg.edu.nus.cs3205.subsystem3.pojos;
 
 import javax.ws.rs.core.UriInfo;
 

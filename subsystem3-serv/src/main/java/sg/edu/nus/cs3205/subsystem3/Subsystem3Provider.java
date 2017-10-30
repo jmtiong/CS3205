@@ -18,7 +18,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
 
-import sg.edu.nus.cs3205.subsystem3.objects.ErrorResponse;
+import sg.edu.nus.cs3205.subsystem3.pojos.ErrorResponse;
 
 @Provider
 public class Subsystem3Provider extends JacksonJsonProvider

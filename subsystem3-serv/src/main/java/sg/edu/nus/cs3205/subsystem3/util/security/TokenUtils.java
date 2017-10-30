@@ -18,8 +18,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 
-import sg.edu.nus.cs3205.subsystem3.objects.GrantClaim;
-import sg.edu.nus.cs3205.subsystem3.objects.GrantRequest;
+import sg.edu.nus.cs3205.subsystem3.pojos.GrantClaim;
+import sg.edu.nus.cs3205.subsystem3.pojos.GrantRequest;
 
 public final class TokenUtils {
     private static final String hashAlgorithm = TokenConfigs.getConfig("algorithm.hash");
