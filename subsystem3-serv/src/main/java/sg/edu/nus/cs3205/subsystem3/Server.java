@@ -15,8 +15,8 @@ import javax.ws.rs.core.UriInfo;
 import sg.edu.nus.cs3205.subsystem3.api.oauth.TokenGranter;
 import sg.edu.nus.cs3205.subsystem3.api.session.Session;
 import sg.edu.nus.cs3205.subsystem3.exceptions.WebException;
-import sg.edu.nus.cs3205.subsystem3.objects.GrantClaim;
-import sg.edu.nus.cs3205.subsystem3.objects.Links;
+import sg.edu.nus.cs3205.subsystem3.pojos.GrantClaim;
+import sg.edu.nus.cs3205.subsystem3.pojos.Links;
 import sg.edu.nus.cs3205.subsystem3.util.security.TokenUtils;
 
 @Path("/")

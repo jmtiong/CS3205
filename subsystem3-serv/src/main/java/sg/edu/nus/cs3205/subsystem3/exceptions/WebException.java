@@ -5,7 +5,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
-import sg.edu.nus.cs3205.subsystem3.objects.ErrorResponse;
+import sg.edu.nus.cs3205.subsystem3.pojos.ErrorResponse;
 
 public class WebException extends WebApplicationException {
     private static final long serialVersionUID = -3081261969780084208L;

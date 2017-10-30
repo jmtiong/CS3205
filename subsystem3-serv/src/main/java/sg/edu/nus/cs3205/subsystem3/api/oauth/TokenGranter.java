@@ -18,9 +18,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import sg.edu.nus.cs3205.subsystem3.exceptions.WebException;
-import sg.edu.nus.cs3205.subsystem3.objects.GrantRequest;
-import sg.edu.nus.cs3205.subsystem3.objects.GrantRequest.GrantType;
-import sg.edu.nus.cs3205.subsystem3.objects.PasswordGrant;
+import sg.edu.nus.cs3205.subsystem3.pojos.GrantRequest;
+import sg.edu.nus.cs3205.subsystem3.pojos.PasswordGrant;
+import sg.edu.nus.cs3205.subsystem3.pojos.GrantRequest.GrantType;
 import sg.edu.nus.cs3205.subsystem3.util.security.TokenUtils;
 
 import sg.edu.nus.cs3205.subsystem3.dao.DB;
