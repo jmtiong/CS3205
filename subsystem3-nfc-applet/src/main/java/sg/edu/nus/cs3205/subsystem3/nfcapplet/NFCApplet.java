@@ -73,6 +73,7 @@ public class NFCApplet extends JFrame {
                 this.remove(this.loginPanel);
                 this.revalidate();
                 this.registrationPanel = new RegistrationPanel(this);
+                this.registrationPanel.setPreferredSize(new Dimension(500, 900));
                 this.add(this.registrationPanel, BorderLayout.CENTER);
             }
         }
@@ -187,11 +188,17 @@ public class NFCApplet extends JFrame {
         public void actionPerformed(ActionEvent actionEvent) {
             if (REGISTER.equals(actionEvent.getActionCommand())) {
                 if (selectedUser != null) {
-                    ServerConnector.generateNFCSecret(selectedUser.username, secret -> {
-                        selectedLabel.setText("Secret generated, tap your NFC card");
-                        NFCService.writeData(() -> selectedLabel.setText("Writing to NFC card"),
-                                () -> selectedLabel.setText("NFC card written, remove it"),
-                                selectedUser.username, secret);
+                    ServerConnector.generateNFCSecret(selectedUser.username, encryptedSecret -> {
+                        try {
+                            String secret = Crypto.decrypt(encryptedSecret);
+                            selectedLabel.setText("Secret generated, tap your NFC card");
+                            NFCService.writeData(() -> selectedLabel.setText("Writing to NFC card"),
+                                    () -> selectedLabel.setText("NFC card written, remove it"),
+                                    selectedUser.username, secret);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            selectedLabel.setText("Fatal Error: Cannot decrypt secret");
+                        }
                     });
                 }
             }
