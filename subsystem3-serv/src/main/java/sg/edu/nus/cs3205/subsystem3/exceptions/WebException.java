@@ -6,6 +6,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
 import sg.edu.nus.cs3205.subsystem3.pojos.ErrorResponse;
+import sg.edu.nus.cs3205.subsystem3.util.HttpHeaders;
 
 public class WebException extends WebApplicationException {
     private static final long serialVersionUID = -3081261969780084208L;
@@ -39,15 +40,18 @@ public class WebException extends WebApplicationException {
     }
 
     public WebException(final Response response, final Status status) {
-        super(response.getMediaType() != MediaType.APPLICATION_JSON_TYPE
+        super(response.getMediaType() != MediaType.APPLICATION_JSON_TYPE && response.bufferEntity()
                 ? buildErrorResponse(response, status, response.readEntity(String.class))
-                : Response.fromResponse(response).status(status).build());
+                : Response.fromResponse(response).status(status).header(HttpHeaders.CONNECTION, null)
+                        .build());
     }
 
     private static Response buildErrorResponse(final Response response, final Status status,
             final String errorMessage) {
-        return (response == null ? Response.status(status) : Response.fromResponse(response).status(status))
-                .entity(new ErrorResponse(errorMessage)).type(MediaType.APPLICATION_JSON_TYPE).build();
+        return (response == null ? Response.status(status)
+                : Response.fromResponse(response).status(status).header(HttpHeaders.CONTENT_LENGTH, null)
+                        .header(HttpHeaders.CONNECTION, null)).entity(new ErrorResponse(errorMessage))
+                                .type(MediaType.APPLICATION_JSON_TYPE).build();
     }
 
     private static Response buildErrorResponse(final Status status, final String errorMessage) {
