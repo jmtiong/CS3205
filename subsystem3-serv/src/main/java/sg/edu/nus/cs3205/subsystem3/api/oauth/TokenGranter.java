@@ -1,6 +1,8 @@
 package sg.edu.nus.cs3205.subsystem3.api.oauth;
 
 import java.security.InvalidKeyException;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -18,8 +20,8 @@ import sg.edu.nus.cs3205.subsystem3.exceptions.WebException;
 import sg.edu.nus.cs3205.subsystem3.pojos.AuthChallenge;
 import sg.edu.nus.cs3205.subsystem3.pojos.ErrorResponse;
 import sg.edu.nus.cs3205.subsystem3.pojos.GrantRequest;
-import sg.edu.nus.cs3205.subsystem3.pojos.PasswordGrant;
 import sg.edu.nus.cs3205.subsystem3.pojos.GrantRequest.GrantType;
+import sg.edu.nus.cs3205.subsystem3.pojos.PasswordGrant;
 import sg.edu.nus.cs3205.subsystem3.util.HttpHeaders;
 import sg.edu.nus.cs3205.subsystem3.util.ResourceServerConnector;
 import sg.edu.nus.cs3205.subsystem3.util.security.TokenUtils;
@@ -54,16 +56,21 @@ public class TokenGranter {
             // Get challenge
             if (authorizationHeader == null) {
                 // Get challenge and salt from server 4
-                // TODO async request
-                String challenge = ResourceServerConnector.getChallenge(request.username);
-                String salt = ResourceServerConnector.getUserSalt(request.username);
-                AuthChallenge authChallenge = new AuthChallenge(challenge, salt);
-                return Response.status(Response.Status.UNAUTHORIZED).header(HttpHeaders.WWW_AUTHENTICATE,
-                        new ObjectMapper().setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE)
-                                .writeValueAsString(authChallenge))
-                        .header(HttpHeaders.X_NFC_CHALLENGE,
-                                ResourceServerConnector.getNFCChallenge(request.username))
-                        .entity(new ErrorResponse(Response.Status.UNAUTHORIZED.getReasonPhrase())).build();
+                final Future<String> challenge = ResourceServerConnector.getChallengeAsync(request.username);
+                final Future<String> salt = ResourceServerConnector.getUserSaltAsync(request.username);
+                final Future<String> nfcChallenge = ResourceServerConnector
+                        .getNFCChallengeAsync(request.username);
+                try {
+                    AuthChallenge authChallenge = new AuthChallenge(challenge.get(), salt.get());
+                    return Response.status(Response.Status.UNAUTHORIZED).header(HttpHeaders.WWW_AUTHENTICATE,
+                            new ObjectMapper().setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE)
+                                    .writeValueAsString(authChallenge))
+                            .header(HttpHeaders.X_NFC_CHALLENGE, nfcChallenge.get())
+                            .entity(new ErrorResponse(Response.Status.UNAUTHORIZED.getReasonPhrase()))
+                            .build();
+                } catch (InterruptedException | ExecutionException e) {
+                    throw new WebException(e);
+                }
             } else {
                 // User attempts to log in
                 String[] authHeader = authorizationHeader.split(" ");
