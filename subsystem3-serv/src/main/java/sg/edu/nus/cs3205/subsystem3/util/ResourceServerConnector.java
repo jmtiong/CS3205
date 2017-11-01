@@ -2,6 +2,7 @@ package sg.edu.nus.cs3205.subsystem3.util;
 
 import java.io.InputStream;
 import java.security.InvalidKeyException;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.logging.Logger;
@@ -24,24 +25,49 @@ public class ResourceServerConnector {
     private static Logger LOGGER = Logger.getLogger(ResourceServerConnector.class.getName());
 
     public static String getChallenge(String username) {
+        return resolve(getChallengeAsync(username));
+    }
+
+    public static Future<String> getChallengeAsync(final String username) {
         final WebTarget webTarget = webTarget("user/challenge").queryParam("username", username);
-        final Response response = ResourceServerConnector.request(HttpMethod.GET, webTarget);
-        return response.getStatusInfo().getFamily() == Response.Status.Family.SUCCESSFUL
-                ? response.readEntity(String.class) : TokenUtils.getFakeChallenge();
+        final Future<Response> futureResponse = requestAsync(HttpMethod.GET, webTarget);
+        return CompletableFuture.supplyAsync(() -> {
+            Response response = resolve(futureResponse);
+            return response.getStatusInfo().getFamily() == Response.Status.Family.SUCCESSFUL
+                    ? response.readEntity(String.class) : TokenUtils.getFakeChallenge();
+        });
     }
 
     public static String getNFCChallenge(final String username) {
+        return resolve(getNFCChallengeAsync(username));
+    }
+
+    public static Future<String> getNFCChallengeAsync(final String username) {
         final WebTarget webTarget = webTarget("user/nfcchallenge").queryParam("username", username);
-        final Response response = request(HttpMethod.GET, webTarget);
-        return response.getStatusInfo().getFamily() == Response.Status.Family.SUCCESSFUL
-                ? response.readEntity(String.class) : TokenUtils.getFakeChallenge();
+        final Future<Response> futureResponse = requestAsync(HttpMethod.GET, webTarget);
+        return CompletableFuture.supplyAsync(() -> {
+            Response response = resolve(futureResponse);
+            return response.getStatusInfo().getFamily() == Response.Status.Family.SUCCESSFUL
+                    ? response.readEntity(String.class) : TokenUtils.getFakeChallenge();
+        });
     }
 
     public static String getUserSalt(final String username) throws InvalidKeyException {
+        return resolve(getUserSaltAsync(username));
+    }
+
+    public static Future<String> getUserSaltAsync(final String username) {
         final WebTarget webTarget = webTarget("user").queryParam("username", username);
-        final Response response = request(HttpMethod.GET, webTarget);
-        return response.getStatusInfo().getFamily() == Response.Status.Family.SUCCESSFUL
-                ? response.readEntity(String.class) : TokenUtils.getFakeSalt(username);
+        final Future<Response> futureResponse = requestAsync(HttpMethod.GET, webTarget);
+        return CompletableFuture.supplyAsync(() -> {
+            Response response = resolve(futureResponse);
+            try {
+                return response.getStatusInfo().getFamily() == Response.Status.Family.SUCCESSFUL
+                        ? response.readEntity(String.class) : TokenUtils.getFakeSalt(username);
+            } catch (Exception e) {
+                throw new WebException(e);
+            }
+        });
     }
 
     public static int verifyResponse(final String username, final String authorization,
@@ -90,11 +116,17 @@ public class ResourceServerConnector {
 
     private static Response request(final String method, final WebTarget webTarget, final Entity<?> entity,
             final String... headerPairs) {
+        return resolve(requestAsync(method, webTarget, entity, headerPairs));
+    }
+
+    private static <T> T resolve(final Future<T> future) throws WebException {
         try {
-            final Response response = requestAsync(method, webTarget, entity, headerPairs).get();
-            LOGGER.info(response.getHeaders().entrySet().stream().map(e -> e.getKey() + ": " + e.getValue())
-                    .collect(Collectors.joining("; ")));
-            return response;
+            final T result = future.get();
+            if (result instanceof Response) {
+                LOGGER.info(((Response) result).getHeaders().entrySet().stream()
+                        .map(e -> e.getKey() + ": " + e.getValue()).collect(Collectors.joining("; ")));
+            }
+            return result;
         } catch (InterruptedException | ExecutionException e) {
             throw new WebException(e);
         }
