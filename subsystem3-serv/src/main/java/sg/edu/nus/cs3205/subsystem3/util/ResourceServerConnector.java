@@ -2,11 +2,16 @@ package sg.edu.nus.cs3205.subsystem3.util;
 
 import java.io.InputStream;
 import java.security.InvalidKeyException;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 import javax.ws.rs.HttpMethod;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.Invocation;
+import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
@@ -14,88 +19,101 @@ import sg.edu.nus.cs3205.subsystem3.exceptions.WebException;
 import sg.edu.nus.cs3205.subsystem3.util.security.TokenUtils;
 
 public class ResourceServerConnector {
-    static final String RESOURCE_SERVER_SESSION_PATH = "http://cs3205-4-i.comp.nus.edu.sg/api/team3";
+    static final String RESOURCE_SERVER_HOST = "http://cs3205-4-i.comp.nus.edu.sg/api/team3/";
 
-    public static String getChallenge(final String username) {
-        final String target = String.format("%s/%s", RESOURCE_SERVER_SESSION_PATH, "user/challenge");
-        final Invocation.Builder client = ClientBuilder.newClient().target(target)
-                .queryParam("username", username).request();
-        System.out.println("GET " + target);
-        final Response response = client.get();
+    private static Logger LOGGER = Logger.getLogger(ResourceServerConnector.class.getName());
+
+    public static String getChallenge(String username) {
+        final WebTarget webTarget = webTarget("user/challenge").queryParam("username", username);
+        final Response response = ResourceServerConnector.request(HttpMethod.GET, webTarget);
         return response.getStatusInfo().getFamily() == Response.Status.Family.SUCCESSFUL
                 ? response.readEntity(String.class) : TokenUtils.getFakeChallenge();
     }
 
     public static String getNFCChallenge(final String username) {
-        final String target = String.format("%s/%s", RESOURCE_SERVER_SESSION_PATH, "user/nfcchallenge");
-        final Invocation.Builder client = ClientBuilder.newClient().target(target)
-                .queryParam("username", username).request();
-        System.out.println("GET " + target);
-        final Response response = client.get();
+        final WebTarget webTarget = webTarget("user/nfcchallenge").queryParam("username", username);
+        final Response response = request(HttpMethod.GET, webTarget);
         return response.getStatusInfo().getFamily() == Response.Status.Family.SUCCESSFUL
                 ? response.readEntity(String.class) : TokenUtils.getFakeChallenge();
     }
 
     public static String getUserSalt(final String username) throws InvalidKeyException {
-        final String target;
-        target = String.format("%s/%s", RESOURCE_SERVER_SESSION_PATH, "user", username);
-        final Invocation.Builder client = ClientBuilder.newClient().target(target)
-                .queryParam("username", username).request();
-        System.out.println("GET " + target);
-        final Response response = client.get();
+        final WebTarget webTarget = webTarget("user").queryParam("username", username);
+        final Response response = request(HttpMethod.GET, webTarget);
         return response.getStatusInfo().getFamily() == Response.Status.Family.SUCCESSFUL
                 ? response.readEntity(String.class) : TokenUtils.getFakeSalt(username);
     }
 
     public static int verifyResponse(final String username, final String authorization,
             final String nfcResponse) {
-        System.out.println(username + " " + authorization + " " + nfcResponse);
-        final String target = String.format("%s/%s", RESOURCE_SERVER_SESSION_PATH, "user/login");
-        final Invocation.Builder client = ClientBuilder.newClient().target(target)
-                .queryParam("username", username).request();
-        System.out.println("POST " + target);
-        final Response response = client
-                .header(HttpHeaders.AUTHORIZATION, ResourseServerConfigs.getBasicAuthorization())
-                .header(HttpHeaders.X_PASSWORD_RESPONSE, authorization)
-                .header(HttpHeaders.X_NFC_RESPONSE, nfcResponse).post(null);
-        if (response.getStatusInfo() == Response.Status.OK) {
+        final WebTarget webTarget = webTarget("user/login").queryParam("username", username);
+        final Response response = request(HttpMethod.POST, webTarget, HttpHeaders.X_PASSWORD_RESPONSE,
+                authorization, HttpHeaders.X_NFC_RESPONSE, nfcResponse);
+        if (response.getStatusInfo().getFamily() == Response.Status.Family.SUCCESSFUL) {
             return Integer.parseInt(response.readEntity(String.class));
         } else {
-            throw new WebException(Response.Status.UNAUTHORIZED, response.readEntity(String.class));
+            throw new WebException(response, Response.Status.UNAUTHORIZED);
         }
     }
 
     public static int verifyNFCResponse(final String username, final String nfcResponse) {
-        final String target = String.format("%s/%s", RESOURCE_SERVER_SESSION_PATH, "user/validatenfc");
-        final Invocation.Builder client = ClientBuilder.newClient().target(target)
-                .queryParam("username", username).request();
-        System.out.println("POST " + target);
-        final Response response = client
-                .header(HttpHeaders.AUTHORIZATION, ResourseServerConfigs.getBasicAuthorization())
-                .header(HttpHeaders.X_NFC_RESPONSE, nfcResponse).post(null);
-        if (response.getStatusInfo() == Response.Status.OK) {
+        final WebTarget webTarget = webTarget("user/validatenfc").queryParam("username", username);
+        final Response response = request(HttpMethod.POST, webTarget, HttpHeaders.X_NFC_RESPONSE,
+                nfcResponse);
+        if (response.getStatusInfo().getFamily() == Response.Status.Family.SUCCESSFUL) {
             return Integer.parseInt(response.readEntity(String.class));
         } else {
-            throw new WebException(Response.Status.UNAUTHORIZED, response.readEntity(String.class));
+            throw new WebException(response, Response.Status.UNAUTHORIZED);
         }
     }
 
     public static Response getSession(final Integer userId, final Object type) {
-        final String target = String.format("%s/%s/%d/all", RESOURCE_SERVER_SESSION_PATH, type, userId);
-        final Invocation.Builder client = ClientBuilder.newClient().target(target)
-                .request(MediaType.APPLICATION_JSON_TYPE);
-        System.out.println(HttpMethod.GET + ' ' + target);
-        return client.get();
+        final WebTarget newWebTarget = webTarget("%s/%d/all", type, userId);
+        return request(HttpMethod.GET, newWebTarget);
     }
 
     public static Response postSession(final Integer userId, final Object type, final long timestamp,
             final InputStream requestStream) {
-        final String target = String.format("%s/%s/%d/upload/%d", RESOURCE_SERVER_SESSION_PATH, type, userId,
-                timestamp);
-        final Invocation.Builder client = ClientBuilder.newClient().target(target).request();
-        System.out.println(HttpMethod.POST + ' ' + target);
-        return client
-                .post(Entity.entity(requestStream, MediaType.APPLICATION_OCTET_STREAM_TYPE));
+        final WebTarget webTarget = webTarget("%s/%d/upload/%d", type, userId, timestamp);
+        return request(HttpMethod.POST, webTarget,
+                Entity.entity(requestStream, MediaType.APPLICATION_OCTET_STREAM_TYPE));
+    }
+
+    private static WebTarget webTarget(final String pathFormat, final Object... args) {
+        return ClientBuilder.newClient().target(RESOURCE_SERVER_HOST + String.format(pathFormat, args));
+    }
+
+    private static Response request(final String method, final WebTarget webTarget,
+            final String... headerPairs) {
+        return request(method, webTarget, null, headerPairs);
+    }
+
+    private static Response request(final String method, final WebTarget webTarget, final Entity<?> entity,
+            final String... headerPairs) {
+        try {
+            final Response response = requestAsync(method, webTarget, entity, headerPairs).get();
+            LOGGER.info(response.getHeaders().entrySet().stream().map(e -> e.getKey() + ": " + e.getValue())
+                    .collect(Collectors.joining("; ")));
+            return response;
+        } catch (InterruptedException | ExecutionException e) {
+            throw new WebException(e);
+        }
+    }
+
+    private static Future<Response> requestAsync(final String method, final WebTarget webTarget,
+            final String... headerPairs) {
+        return requestAsync(method, webTarget, null, headerPairs);
+    }
+
+    private static Future<Response> requestAsync(final String method, final WebTarget webTarget,
+            final Entity<?> entity, final String... headerPairs) {
+        LOGGER.info(method + ' ' + webTarget.getUri());
+        Invocation.Builder builder = webTarget.request().header(HttpHeaders.AUTHORIZATION,
+                ResourseServerConfigs.getBasicAuthorization());
+        for (int i = 1; i < headerPairs.length; i += 2) {
+            builder = builder.header(headerPairs[i - 1], headerPairs[i]);
+        }
+        return builder.async().method(method, entity);
     }
 
 }
