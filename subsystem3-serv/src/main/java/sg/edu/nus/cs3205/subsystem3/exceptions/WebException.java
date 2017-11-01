@@ -23,8 +23,7 @@ public class WebException extends WebApplicationException {
     }
 
     public WebException(final Throwable cause, final Status status, final String errorMessage) {
-        this(cause, Response.status(status).entity(new ErrorResponse(errorMessage))
-                .type(MediaType.APPLICATION_JSON_TYPE).build());
+        this(cause, buildErrorResponse(status, errorMessage));
     }
 
     public WebException(final Status status, final String errorMessage) {
@@ -37,5 +36,21 @@ public class WebException extends WebApplicationException {
 
     public WebException(final Status status, final Exception exception) {
         this(exception, status, exception.getMessage());
+    }
+
+    public WebException(final Response response, final Status status) {
+        super(response.getMediaType() != MediaType.APPLICATION_JSON_TYPE
+                ? buildErrorResponse(response, status, response.readEntity(String.class))
+                : Response.fromResponse(response).status(status).build());
+    }
+
+    private static Response buildErrorResponse(final Response response, final Status status,
+            final String errorMessage) {
+        return (response == null ? Response.status(status) : Response.fromResponse(response).status(status))
+                .entity(new ErrorResponse(errorMessage)).type(MediaType.APPLICATION_JSON_TYPE).build();
+    }
+
+    private static Response buildErrorResponse(final Status status, final String errorMessage) {
+        return buildErrorResponse(null, status, errorMessage);
     }
 }
