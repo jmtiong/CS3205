@@ -1,7 +1,6 @@
 package sg.edu.nus.cs3205.subsystem3;
 
 import java.io.IOException;
-import java.util.Date;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.Spliterator;
@@ -30,7 +29,7 @@ import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
 
 import sg.edu.nus.cs3205.subsystem3.pojos.ErrorResponse;
 
-@Priority(Integer.MAX_VALUE)
+@Priority(0)
 @Provider
 public class Subsystem3Provider extends JacksonJsonProvider
         implements ExceptionMapper<JsonMappingException>, ContainerRequestFilter {
@@ -59,11 +58,10 @@ public class Subsystem3Provider extends JacksonJsonProvider
         if (local == null) {
             local = request.getLocalAddr();
         }
-        LOGGER.info(String.format("%s from %s:%d to %s:%d\n", new Date(), remote, request.getRemotePort(),
-                local, request.getLocalPort()));
+        LOGGER.info(String.format("From %s:%d to %s:%d\n", remote, request.getRemotePort(), local,
+                request.getLocalPort()));
 
         Enumeration<String> headerNames = request.getHeaderNames();
-
         LOGGER.info(StreamSupport.stream(Spliterators.spliteratorUnknownSize(new Iterator<String>() {
             @Override
             public String next() {
