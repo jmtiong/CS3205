@@ -2,9 +2,16 @@ package sg.edu.nus.cs3205.subsystem3;
 
 import java.io.IOException;
 import java.util.Date;
+import java.util.Enumeration;
+import java.util.Iterator;
+import java.util.Spliterator;
+import java.util.Spliterators;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
+import javax.annotation.Priority;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
@@ -23,6 +30,7 @@ import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
 
 import sg.edu.nus.cs3205.subsystem3.pojos.ErrorResponse;
 
+@Priority(Integer.MAX_VALUE)
 @Provider
 public class Subsystem3Provider extends JacksonJsonProvider
         implements ExceptionMapper<JsonMappingException>, ContainerRequestFilter {
@@ -53,11 +61,26 @@ public class Subsystem3Provider extends JacksonJsonProvider
         }
         LOGGER.info(String.format("%s from %s:%d to %s:%d\n", new Date(), remote, request.getRemotePort(),
                 local, request.getLocalPort()));
+
+        Enumeration<String> headerNames = request.getHeaderNames();
+
+        LOGGER.info(StreamSupport.stream(Spliterators.spliteratorUnknownSize(new Iterator<String>() {
+            @Override
+            public String next() {
+                return headerNames.nextElement();
+            }
+
+            @Override
+            public boolean hasNext() {
+                return headerNames.hasMoreElements();
+            }
+        }, Spliterator.ORDERED), false).map(headerName -> headerName + ": " + request.getHeader(headerName))
+                .collect(Collectors.joining("; ")));
     }
 
     @Override
     public Response toResponse(final JsonMappingException exception) {
-        LOGGER.log(Level.FINE, "JsonParseException", exception);
+        LOGGER.log(Level.INFO, "JsonMappingException", exception);
         return Response.status(Response.Status.BAD_REQUEST)
                 .entity(new ErrorResponse("Invalid body's JSON format")).type(MediaType.APPLICATION_JSON_TYPE)
                 .build();
