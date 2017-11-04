@@ -22,4 +22,16 @@ public class ResourseServerConfigs {
     public static String getBasicAuthorization() {
         return getString("resourceserver.basicauthorization");
     }
+
+    public static String getKeyStore() {
+        return getString("ssl.keystore");
+    }
+
+    public static String getTrustStore() {
+        return getString("ssl.truststore");
+    }
+
+    public static String getSSLPassword() {
+        return getString("ssl.password");
+    }
 }
