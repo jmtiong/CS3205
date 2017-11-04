@@ -6,9 +6,11 @@ import java.security.InvalidKeyException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.Base64.Decoder;
 import java.util.Base64.Encoder;
+import java.util.Random;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
@@ -18,8 +20,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 
-import sg.edu.nus.cs3205.subsystem3.objects.GrantClaim;
-import sg.edu.nus.cs3205.subsystem3.objects.GrantRequest;
+import sg.edu.nus.cs3205.subsystem3.pojos.GrantClaim;
+import sg.edu.nus.cs3205.subsystem3.pojos.GrantRequest;
 
 public final class TokenUtils {
     private static final String hashAlgorithm = TokenConfigs.getConfig("algorithm.hash");
@@ -55,7 +57,13 @@ public final class TokenUtils {
 
     public static String createJWT(final GrantRequest request)
             throws JsonProcessingException, InvalidKeyException {
-        return createJWT(request.getPasswordClaim(System.currentTimeMillis() + jwtExpiration));
+        return createJWT((Object) request.getPasswordClaim(System.currentTimeMillis() + jwtExpiration));
+    }
+
+    public static String createJWT(final GrantClaim claim)
+            throws JsonProcessingException, InvalidKeyException {
+        return createJWT((Object) new GrantClaim(claim.userId, claim.username,
+                System.currentTimeMillis() + jwtExpiration));
     }
 
     public static String createJWT(final Object claim) throws JsonProcessingException, InvalidKeyException {
@@ -81,14 +89,32 @@ public final class TokenUtils {
         // verify claims
         final String payload = new String(BASE64_DECODER.decode(parts[1]));
         final GrantClaim claim = MAPPER.readValue(payload, GrantClaim.class);
+        if (claim.userId == null || claim.username == null) {
+            throw new GeneralSecurityException("Invalid JWT payload");
+        }
         if (claim.exp != null && claim.exp < System.currentTimeMillis() - jwtLeeway) {
             throw new CredentialException("Token expired");
         }
         return claim;
     }
 
+    public static String getFakeSalt(final String username) throws InvalidKeyException {
+        return BASE64_ENCODER
+                .encodeToString(Arrays.copyOfRange(hmacSha256(username, "fake".getBytes()), 0, 22));
+    }
+
+    public static String getFakeChallenge() {
+        byte[] challenge = new byte[32];
+        new Random().nextBytes(challenge);
+        return BASE64_ENCODER.encodeToString(challenge);
+    }
+
     private static byte[] createSignature(final String content) throws InvalidKeyException {
-        hmacSHA256.init(new SecretKeySpec(secretBytes, hmacAlgorithm));
+        return hmacSha256(content, secretBytes);
+    }
+
+    private static byte[] hmacSha256(final String content, final byte[] key) throws InvalidKeyException {
+        hmacSHA256.init(new SecretKeySpec(key, hmacAlgorithm));
         return hmacSHA256.doFinal(content.getBytes(StandardCharsets.UTF_8));
     }
 }

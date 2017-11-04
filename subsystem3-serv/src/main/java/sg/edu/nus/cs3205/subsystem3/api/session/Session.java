@@ -1,6 +1,7 @@
 package sg.edu.nus.cs3205.subsystem3.api.session;
 
 import java.io.InputStream;
+import java.security.InvalidKeyException;
 import java.util.NoSuchElementException;
 import java.util.stream.Stream;
 
@@ -12,16 +13,20 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
-import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.client.Entity;
-import javax.ws.rs.client.Invocation;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
-import sg.edu.nus.cs3205.subsystem3.objects.Link;
-import sg.edu.nus.cs3205.subsystem3.objects.Links;
+import com.fasterxml.jackson.core.JsonProcessingException;
+
+import sg.edu.nus.cs3205.subsystem3.exceptions.WebException;
+import sg.edu.nus.cs3205.subsystem3.pojos.GrantClaim;
+import sg.edu.nus.cs3205.subsystem3.pojos.Link;
+import sg.edu.nus.cs3205.subsystem3.pojos.Links;
+import sg.edu.nus.cs3205.subsystem3.util.HttpHeaders;
+import sg.edu.nus.cs3205.subsystem3.util.ResourceServerConnector;
+import sg.edu.nus.cs3205.subsystem3.util.security.TokenUtils;
 
 @Consumes(MediaType.APPLICATION_OCTET_STREAM)
 @Produces(MediaType.APPLICATION_JSON)
@@ -50,48 +55,47 @@ public class Session {
         }
     }
 
-    private static final String RESOURCE_SERVER_SESSION_PATH = "http://cs3205-4-i.comp.nus.edu.sg/api/team3";
+    private final GrantClaim claim;
 
-    private final Integer userID;
-
-    public Session(final int userID) {
-        this.userID = userID;
+    public Session(final GrantClaim claim) {
+        this.claim = claim;
     }
 
     @GET
     public Response getRoot(@Context final UriInfo uri) {
-        return Response
-                .ok(new Links(Stream
+        return wrapJWTRefresh(
+                Response.ok(new Links(Stream
                         .concat(Stream.of(Links.newLink(uri, "", "self", HttpMethod.GET)),
                                 Stream.of(SessionType.values())
                                         .map(type -> Links.newLink(uri, type.toString(), "session." + type,
                                                 HttpMethod.GET + ',' + HttpMethod.POST)))
-                        .toArray(Link[]::new)))
-                .build();
+                        .toArray(Link[]::new))).build());
     }
 
     @GET
     @Path("/{type}")
     public Response getSessions(@PathParam("type") final SessionType type) {
-        final String target = String.format("%s/%s/%d/all", RESOURCE_SERVER_SESSION_PATH, type, this.userID);
-        final Invocation.Builder client = ClientBuilder.newClient().target(target)
-                .request(MediaType.APPLICATION_JSON_TYPE);
-        System.out.println(HttpMethod.GET + ' ' + target);
-        return client.get();
+        return wrapJWTRefresh(ResourceServerConnector.getSession(this.claim.userId, type));
     }
 
     @POST
     @Path("/{type}")
     public Response upload(@PathParam("type") final SessionType type,
             @QueryParam("timestamp") final long timestamp, final InputStream requestStream) {
-        final String target = String.format("%s/%s/%d/upload/%d", RESOURCE_SERVER_SESSION_PATH, type,
-                this.userID, timestamp);
-        final Invocation.Builder client = ClientBuilder.newClient().target(target).request();
-        System.out.println(HttpMethod.POST + ' ' + target);
-        // TODO Add in the headers for server 4 verification in the future
-        final Response response = client
-                .post(Entity.entity(requestStream, MediaType.APPLICATION_OCTET_STREAM_TYPE));
-        // TODO Custom response
-        return response;
+        Response response = ResourceServerConnector.postSession(this.claim.userId, type, timestamp,
+                requestStream);
+        if (response.getStatusInfo() != Response.Status.CREATED) {
+            response = Response.fromResponse(response).status(Response.Status.CREATED).build();
+        }
+        return wrapJWTRefresh(response);
+    }
+
+    public Response wrapJWTRefresh(Response response) throws WebException {
+        try {
+            return Response.fromResponse(response)
+                    .header(HttpHeaders.SET_AUTHORIZATION, TokenUtils.createJWT(this.claim)).build();
+        } catch (InvalidKeyException | JsonProcessingException e) {
+            throw new WebException(e);
+        }
     }
 }
