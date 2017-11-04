@@ -30,7 +30,7 @@ public class ResourceServerConnector {
 
     private static Logger LOGGER = Logger.getLogger(ResourceServerConnector.class.getName());
 
-    public static String getChallenge(String username) {
+    public static String getChallenge(final String username) {
         return resolve(getChallengeAsync(username));
     }
 
@@ -38,7 +38,7 @@ public class ResourceServerConnector {
         final WebTarget webTarget = webTarget("user/challenge").queryParam("username", username);
         final Future<Response> futureResponse = requestAsync(HttpMethod.GET, webTarget);
         return CompletableFuture.supplyAsync(() -> {
-            Response response = resolve(futureResponse);
+            final Response response = resolve(futureResponse);
             return response.getStatusInfo().getFamily() == Response.Status.Family.SUCCESSFUL
                     ? response.readEntity(String.class) : TokenUtils.getFakeChallenge();
         });
@@ -52,7 +52,7 @@ public class ResourceServerConnector {
         final WebTarget webTarget = webTarget("user/nfcchallenge").queryParam("username", username);
         final Future<Response> futureResponse = requestAsync(HttpMethod.GET, webTarget);
         return CompletableFuture.supplyAsync(() -> {
-            Response response = resolve(futureResponse);
+            final Response response = resolve(futureResponse);
             return response.getStatusInfo().getFamily() == Response.Status.Family.SUCCESSFUL
                     ? response.readEntity(String.class) : TokenUtils.getFakeChallenge();
         });
@@ -66,11 +66,11 @@ public class ResourceServerConnector {
         final WebTarget webTarget = webTarget("user").queryParam("username", username);
         final Future<Response> futureResponse = requestAsync(HttpMethod.GET, webTarget);
         return CompletableFuture.supplyAsync(() -> {
-            Response response = resolve(futureResponse);
+            final Response response = resolve(futureResponse);
             try {
                 return response.getStatusInfo().getFamily() == Response.Status.Family.SUCCESSFUL
                         ? response.readEntity(String.class) : TokenUtils.getFakeSalt(username);
-            } catch (Exception e) {
+            } catch (final Exception e) {
                 throw new WebException(e);
             }
         });
@@ -115,7 +115,7 @@ public class ResourceServerConnector {
         try {
             return ClientBuilder.newBuilder().sslContext(getSSLContext()).build()
                     .target(RESOURCE_SERVER_HOST + String.format(pathFormat, args));
-        } catch (Exception e) {
+        } catch (final Exception e) {
             LOGGER.log(Level.SEVERE, "Can't get SSL context", e);
             throw new WebException(Response.Status.INTERNAL_SERVER_ERROR, "Can't get SSL context");
         }
@@ -161,7 +161,7 @@ public class ResourceServerConnector {
     }
 
     private static SSLContext getSSLContext() throws Exception {
-        SSLContext context = SSLContext.getInstance("TLS");
+        final SSLContext context = SSLContext.getInstance("TLS");
         final KeyStore keyStore = KeyStore.getInstance("JKS");
         try (final InputStream is = new FileInputStream(ResourseServerConfigs.getKeyStore())) {
             keyStore.load(is, ResourseServerConfigs.getSSLPassword().toCharArray());
