@@ -62,7 +62,7 @@ public class DBQueryParser {
             }
         }
         query += ";";
-        PreparedStatement ps = DB.getConnection().prepareStatement(query);
+        PreparedStatement ps = DB.connectDatabase().prepareStatement(query);
         if (conditions != null && conditions.length > 0 && variables != null && variables.length > 0
                 && variables.length == conditions.length) {
             int i = 0;
@@ -86,7 +86,7 @@ public class DBQueryParser {
         final String sql = "INSERT INTO CS3205.user VALUES (?, ?, ?);";
         int result = 0;
         try {
-            PreparedStatement ps = DB.getConnection().prepareStatement(sql);
+            PreparedStatement ps = DB.connectDatabase().prepareStatement(sql);
             int i = 0;
             for (final Object value : values) {
                 ps = updateVariables(ps, values[i], i);

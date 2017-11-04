@@ -23,7 +23,7 @@
 		</dependency>
 		<dependency>
 			<groupId>org.glassfish.jersey.containers</groupId>
-			<artifactId>jersey-container-servlet-core</artifactId>
+			<artifactId>jersey-container-servlet</artifactId>
 			<version>${jersey.version}</version>
 		</dependency>
 		<dependency>
@@ -58,6 +58,12 @@
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>subsystem3-nfc-applet</artifactId>
+		</dependency>
+
+		<!-- Logger -->
+		<dependency>
+			<groupId>ch.qos.logback</groupId>
+			<artifactId>logback-classic</artifactId>
 		</dependency>
 
 		<!-- Testing -->
@@ -100,7 +106,7 @@
 								<resource>
 									<directory>${basedir}/../subsystem3-nfc-applet/target/jnlp</directory>
 									<excludes>
-									   <exclude>*.jks</exclude>
+										<exclude>*.jks</exclude>
 									</excludes>
 								</resource>
 							</resources>
@@ -111,25 +117,25 @@
 			<plugin>
 				<artifactId>maven-dependency-plugin</artifactId>
 				<executions>
-                    <execution>
-                        <id>deploy-local-tomcat</id>
-                        <phase>install</phase>
-                        <goals>
-                            <goal>copy</goal>
-                        </goals>
-                        <configuration>
-                            <artifactItems>
-                                <artifactItem>
-                                    <groupId>${project.groupId}</groupId>
-                                    <artifactId>${project.artifactId}</artifactId>
-                                    <version>${project.version}</version>
-                                    <type>${project.packaging}</type>
-                                    <outputDirectory>${env.CATALINA_HOME}/webapps</outputDirectory>
-                                    <destFileName>ROOT.war</destFileName>
-                                </artifactItem>
-                            </artifactItems>
-                        </configuration>
-                    </execution>
+					<execution>
+						<id>deploy-local-tomcat</id>
+						<phase>install</phase>
+						<goals>
+							<goal>copy</goal>
+						</goals>
+						<configuration>
+							<artifactItems>
+								<artifactItem>
+									<groupId>${project.groupId}</groupId>
+									<artifactId>${project.artifactId}</artifactId>
+									<version>${project.version}</version>
+									<type>${project.packaging}</type>
+									<outputDirectory>${env.CATALINA_HOME}/webapps</outputDirectory>
+									<destFileName>ROOT.war</destFileName>
+								</artifactItem>
+							</artifactItems>
+						</configuration>
+					</execution>
 				</executions>
 			</plugin>
 		</plugins>
