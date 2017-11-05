@@ -1,4 +1,4 @@
-package sg.edu.nus.cs3205.subsystem3.nfcapplet;
+package sg.edu.nus.cs3205.subsystem3.nfcapp;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -28,15 +28,15 @@ import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 
-public class NFCApplet extends JFrame {
+public class NFCApp extends JFrame {
     private static final long serialVersionUID = 3899822683922114716L;
 
     public static void main(String... args) throws Exception {
-        NFCApplet app = new NFCApplet();
+        NFCApp app = new NFCApp();
         app.start();
     }
 
-    public NFCApplet() {
+    public NFCApp() {
         super("NFC Registration");
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     }
