@@ -125,7 +125,8 @@ public class ResourceServerConnector {
         try {
             final T result = future.get();
             if (result instanceof Response) {
-                LOGGER.info(((Response) result).getHeaders().entrySet().stream()
+                LOGGER.info("SV4 response | " + ((Response) result).getStatus());
+                LOGGER.info("SV4 headers | " + ((Response) result).getHeaders().entrySet().stream()
                         .map(e -> e.getKey() + ": " + e.getValue()).collect(Collectors.joining("; ")));
             }
             return result;
