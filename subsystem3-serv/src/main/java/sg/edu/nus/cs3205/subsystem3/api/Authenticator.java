@@ -8,7 +8,6 @@ import sg.edu.nus.cs3205.subsystem3.api.session.Session;
 import sg.edu.nus.cs3205.subsystem3.api.session.UnauthorizedSession;
 import sg.edu.nus.cs3205.subsystem3.exceptions.WebException;
 import sg.edu.nus.cs3205.subsystem3.pojos.GrantClaim;
-import sg.edu.nus.cs3205.subsystem3.util.ResourceServerConnector;
 import sg.edu.nus.cs3205.subsystem3.util.security.TokenUtils;
 
 public class Authenticator {
@@ -35,12 +34,6 @@ public class Authenticator {
         if (nfcResponse == null) {
             return new UnauthorizedSession(claim);
         } else {
-            try {
-                ResourceServerConnector.verifyNFCResponse(claim.username, nfcResponse);
-            } catch (final Exception e) {
-                throw new WebException(Response.Status.UNAUTHORIZED, e);
-            }
-
             return new Session(claim);
         }
     }

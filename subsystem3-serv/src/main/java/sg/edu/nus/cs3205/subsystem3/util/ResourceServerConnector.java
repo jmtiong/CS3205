@@ -88,27 +88,17 @@ public class ResourceServerConnector {
         }
     }
 
-    public static int verifyNFCResponse(final String username, final String nfcResponse) {
-        final WebTarget webTarget = webTarget("user/validatenfc").queryParam("username", username);
-        final Response response = request(HttpMethod.POST, webTarget, HttpHeaders.X_NFC_RESPONSE,
-                nfcResponse);
-        if (response.getStatusInfo().getFamily() == Response.Status.Family.SUCCESSFUL) {
-            return Integer.parseInt(response.readEntity(String.class));
-        } else {
-            throw new WebException(response, Response.Status.UNAUTHORIZED);
-        }
-    }
-
     public static Response getSession(final Integer userId, final Object type) {
         final WebTarget newWebTarget = webTarget("%s/%d/all", type, userId);
         return request(HttpMethod.GET, newWebTarget);
     }
 
     public static Response postSession(final Integer userId, final Object type, final long timestamp,
-            final InputStream requestStream) {
+            final String nfcResponse, final InputStream requestStream) {
         final WebTarget webTarget = webTarget("%s/%d/upload/%d", type, userId, timestamp);
         return request(HttpMethod.POST, webTarget,
-                Entity.entity(requestStream, MediaType.APPLICATION_OCTET_STREAM_TYPE));
+                Entity.entity(requestStream, MediaType.APPLICATION_OCTET_STREAM_TYPE),
+                HttpHeaders.X_NFC_RESPONSE, nfcResponse);
     }
 
     private static WebTarget webTarget(final String pathFormat, final Object... args) {
