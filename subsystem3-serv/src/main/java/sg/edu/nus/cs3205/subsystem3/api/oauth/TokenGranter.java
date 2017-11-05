@@ -42,8 +42,8 @@ public class TokenGranter {
     @POST
     public Response grant(final GrantRequest request,
             @HeaderParam(HttpHeaders.X_NFC_RESPONSE) final String nfcResponse,
-            @HeaderParam(HttpHeaders.AUTHORIZATION) final String authorizationHeader,
-            @HeaderParam("debug") boolean debugMode) throws InvalidKeyException, JsonProcessingException {
+            @HeaderParam(HttpHeaders.AUTHORIZATION) final String authorizationHeader)
+            throws InvalidKeyException, JsonProcessingException {
         if (request == null) {
             throw new WebException(Response.Status.BAD_REQUEST, "Missing request body");
         } else if (request.grantType == null) {
@@ -80,12 +80,9 @@ public class TokenGranter {
                 if (nfcResponse == null) {
                     throw new WebException(Response.Status.BAD_REQUEST, "Missing X-NFC-Response header");
                 }
-                if (debugMode) {
-                    request.userId = 1;
-                } else {
-                    request.userId = ResourceServerConnector.verifyResponse(request.username,
-                            authorizationHeader, nfcResponse);
-                }
+
+                request.userId = ResourceServerConnector.verifyResponse(request.username, authorizationHeader,
+                        nfcResponse);
                 try {
                     final String jwt = TokenUtils.createJWT(request);
                     return Response.ok(new PasswordGrant(jwt)).header(HttpHeaders.SET_AUTHORIZATION, jwt)

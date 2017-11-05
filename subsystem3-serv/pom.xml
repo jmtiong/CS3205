@@ -54,10 +54,10 @@
 			<version>6.0.6</version>
 		</dependency>
 
-		<!-- NFC Applet module -->
+		<!-- NFC App module -->
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>subsystem3-nfc-applet</artifactId>
+			<artifactId>subsystem3-nfc-app</artifactId>
 		</dependency>
 
 		<!-- Logger -->
@@ -95,7 +95,7 @@
 				<artifactId>maven-resources-plugin</artifactId>
 				<executions>
 					<execution>
-						<id>copy-nfc-applet-bundle</id>
+						<id>copy-nfcapp-bundle</id>
 						<phase>process-resources</phase>
 						<goals>
 							<goal>copy-resources</goal>
@@ -104,7 +104,7 @@
 							<outputDirectory>${project.build.directory}/${project.build.finalName}/admin/jnlp</outputDirectory>
 							<resources>
 								<resource>
-									<directory>${basedir}/../subsystem3-nfc-applet/target/jnlp</directory>
+									<directory>${basedir}/../subsystem3-nfc-app/target/jnlp</directory>
 									<excludes>
 										<exclude>*.jks</exclude>
 									</excludes>

@@ -7,6 +7,7 @@ import java.util.stream.Stream;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
+import javax.ws.rs.HeaderParam;
 import javax.ws.rs.HttpMethod;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -30,7 +31,7 @@ import sg.edu.nus.cs3205.subsystem3.util.security.TokenUtils;
 
 @Consumes(MediaType.APPLICATION_OCTET_STREAM)
 @Produces(MediaType.APPLICATION_JSON)
-public class Session {
+public class Session implements ISession {
     public static enum SessionType {
         HEART("heart"), STEP("step"), IMAGE("image"), VIDEO("video");
 
@@ -81,9 +82,11 @@ public class Session {
     @POST
     @Path("/{type}")
     public Response upload(@PathParam("type") final SessionType type,
-            @QueryParam("timestamp") final long timestamp, final InputStream requestStream) {
+            @QueryParam("timestamp") final long timestamp,
+            @HeaderParam(HttpHeaders.X_NFC_RESPONSE) final String nfcResponse,
+            final InputStream requestStream) {
         Response response = ResourceServerConnector.postSession(this.claim.userId, type, timestamp,
-                requestStream);
+                nfcResponse, requestStream);
         if (response.getStatusInfo() != Response.Status.CREATED) {
             response = Response.fromResponse(response).status(Response.Status.CREATED).build();
         }

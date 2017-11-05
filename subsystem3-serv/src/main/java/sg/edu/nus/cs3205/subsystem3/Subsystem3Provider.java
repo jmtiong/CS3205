@@ -58,8 +58,8 @@ public class Subsystem3Provider extends JacksonJsonProvider
         if (local == null) {
             local = request.getLocalAddr();
         }
-        LOGGER.info(String.format("From %s:%d to %s:%d\n", remote, request.getRemotePort(), local,
-                request.getLocalPort()));
+        LOGGER.info(String.format("From %s:%d to %s:%d %s\n", remote, request.getRemotePort(), local,
+                request.getLocalPort(), request.getRequestURI()));
 
         Enumeration<String> headerNames = request.getHeaderNames();
         LOGGER.info(StreamSupport.stream(Spliterators.spliteratorUnknownSize(new Iterator<String>() {

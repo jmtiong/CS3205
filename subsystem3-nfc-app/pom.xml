@@ -7,11 +7,11 @@
 		<version>1.0-a01</version>
 		<relativePath>..</relativePath>
 	</parent>
-	<artifactId>subsystem3-nfc-applet</artifactId>
+	<artifactId>subsystem3-nfc-app</artifactId>
 	<packaging>jar</packaging>
 	<url>https://cs3205-3.comp.nus.edu.sg/admin</url>
-	<name>NFC Registration Applet</name>
-	<description>NFC Registration Applet for writing, reading and registering patient NFC tags</description>
+	<name>NFC Registration App</name>
+	<description>NFC Registration App for writing, reading and registering patient NFC tags</description>
 	<properties>
 		<jersey.version>2.26</jersey.version>
 	</properties>
@@ -75,7 +75,7 @@
 								<verify>true</verify>
 							</sign>
 							<jnlp>
-								<mainClass>sg.edu.nus.cs3205.subsystem3.nfcapplet.NFCApplet</mainClass>
+								<mainClass>sg.edu.nus.cs3205.subsystem3.nfcapp.NFCApp</mainClass>
 								<outputFile>nfc-registration.jnlp</outputFile>
 							</jnlp>
 						</configuration>
