@@ -1,13 +1,19 @@
 package sg.edu.nus.cs3205.subsystem3.util;
 
+import java.io.FileInputStream;
 import java.io.InputStream;
 import java.security.InvalidKeyException;
+import java.security.KeyStore;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManagerFactory;
 import javax.ws.rs.HttpMethod;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
@@ -20,11 +26,11 @@ import sg.edu.nus.cs3205.subsystem3.exceptions.WebException;
 import sg.edu.nus.cs3205.subsystem3.util.security.TokenUtils;
 
 public class ResourceServerConnector {
-    static final String RESOURCE_SERVER_HOST = "http://cs3205-4-i.comp.nus.edu.sg/api/team3/";
+    static final String RESOURCE_SERVER_HOST = "https://cs3205-4-i.comp.nus.edu.sg/api/team3/";
 
     private static Logger LOGGER = Logger.getLogger(ResourceServerConnector.class.getName());
 
-    public static String getChallenge(String username) {
+    public static String getChallenge(final String username) {
         return resolve(getChallengeAsync(username));
     }
 
@@ -32,7 +38,7 @@ public class ResourceServerConnector {
         final WebTarget webTarget = webTarget("user/challenge").queryParam("username", username);
         final Future<Response> futureResponse = requestAsync(HttpMethod.GET, webTarget);
         return CompletableFuture.supplyAsync(() -> {
-            Response response = resolve(futureResponse);
+            final Response response = resolve(futureResponse);
             return response.getStatusInfo().getFamily() == Response.Status.Family.SUCCESSFUL
                     ? response.readEntity(String.class) : TokenUtils.getFakeChallenge();
         });
@@ -46,7 +52,7 @@ public class ResourceServerConnector {
         final WebTarget webTarget = webTarget("user/nfcchallenge").queryParam("username", username);
         final Future<Response> futureResponse = requestAsync(HttpMethod.GET, webTarget);
         return CompletableFuture.supplyAsync(() -> {
-            Response response = resolve(futureResponse);
+            final Response response = resolve(futureResponse);
             return response.getStatusInfo().getFamily() == Response.Status.Family.SUCCESSFUL
                     ? response.readEntity(String.class) : TokenUtils.getFakeChallenge();
         });
@@ -60,11 +66,11 @@ public class ResourceServerConnector {
         final WebTarget webTarget = webTarget("user").queryParam("username", username);
         final Future<Response> futureResponse = requestAsync(HttpMethod.GET, webTarget);
         return CompletableFuture.supplyAsync(() -> {
-            Response response = resolve(futureResponse);
+            final Response response = resolve(futureResponse);
             try {
                 return response.getStatusInfo().getFamily() == Response.Status.Family.SUCCESSFUL
                         ? response.readEntity(String.class) : TokenUtils.getFakeSalt(username);
-            } catch (Exception e) {
+            } catch (final Exception e) {
                 throw new WebException(e);
             }
         });
@@ -106,7 +112,13 @@ public class ResourceServerConnector {
     }
 
     private static WebTarget webTarget(final String pathFormat, final Object... args) {
-        return ClientBuilder.newClient().target(RESOURCE_SERVER_HOST + String.format(pathFormat, args));
+        try {
+            return ClientBuilder.newBuilder().sslContext(getSSLContext()).build()
+                    .target(RESOURCE_SERVER_HOST + String.format(pathFormat, args));
+        } catch (final Exception e) {
+            LOGGER.log(Level.SEVERE, "Can't get SSL context", e);
+            throw new WebException(Response.Status.INTERNAL_SERVER_ERROR, "Can't get SSL context");
+        }
     }
 
     private static Response request(final String method, final WebTarget webTarget,
@@ -148,4 +160,22 @@ public class ResourceServerConnector {
         return builder.async().method(method, entity);
     }
 
+    private static SSLContext getSSLContext() throws Exception {
+        final SSLContext context = SSLContext.getInstance("TLS");
+        final KeyStore keyStore = KeyStore.getInstance("JKS");
+        try (final InputStream is = new FileInputStream(ResourseServerConfigs.getKeyStore())) {
+            keyStore.load(is, ResourseServerConfigs.getSSLPassword().toCharArray());
+        }
+        final KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+        kmf.init(keyStore, ResourseServerConfigs.getSSLPassword().toCharArray());
+        final KeyStore trustedStore = KeyStore.getInstance("JKS");
+        try (final InputStream is = new FileInputStream(ResourseServerConfigs.getTrustStore())) {
+            trustedStore.load(is, ResourseServerConfigs.getSSLPassword().toCharArray());
+        }
+        final TrustManagerFactory tmf = TrustManagerFactory
+                .getInstance(TrustManagerFactory.getDefaultAlgorithm());
+        tmf.init(trustedStore);
+        context.init(kmf.getKeyManagers(), tmf.getTrustManagers(), new java.security.SecureRandom());
+        return context;
+    }
 }
