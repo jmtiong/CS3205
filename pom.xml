@@ -11,7 +11,7 @@
 	<url>https://cs3205-3.comp.nus.edu.sg</url>
 
 	<modules>
-		<module>subsystem3-nfc-applet</module>
+		<module>subsystem3-nfc-app</module>
 		<module>subsystem3-serv</module>
 	</modules>
 
@@ -19,7 +19,7 @@
 		<dependencies>
 			<dependency>
 				<groupId>${project.groupId}</groupId>
-				<artifactId>subsystem3-nfc-applet</artifactId>
+				<artifactId>subsystem3-nfc-app</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 	        <dependency>

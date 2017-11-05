@@ -1,4 +1,4 @@
-package sg.edu.nus.cs3205.subsystem3.nfcapplet;
+package sg.edu.nus.cs3205.subsystem3.nfcapp;
 
 import java.io.BufferedReader;
 import java.io.IOException;
