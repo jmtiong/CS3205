@@ -30,7 +30,7 @@ import sg.edu.nus.cs3205.subsystem3.util.security.TokenUtils;
 
 @Consumes(MediaType.APPLICATION_OCTET_STREAM)
 @Produces(MediaType.APPLICATION_JSON)
-public class Session {
+public class Session implements ISession {
     public static enum SessionType {
         HEART("heart"), STEP("step"), IMAGE("image"), VIDEO("video");
 
