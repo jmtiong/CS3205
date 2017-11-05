@@ -8,6 +8,7 @@ import java.awt.GridLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.security.GeneralSecurityException;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -195,9 +196,12 @@ public class NFCApp extends JFrame {
                             NFCService.writeData(() -> selectedLabel.setText("Writing to NFC card"),
                                     () -> selectedLabel.setText("NFC card written, remove it"),
                                     selectedUser.username, secret);
-                        } catch (Exception e) {
+                        } catch (GeneralSecurityException e) {
                             e.printStackTrace();
                             selectedLabel.setText("Fatal Error: Cannot decrypt secret");
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            selectedLabel.setText("Fatal Error: NFC write service failed");
                         }
                     });
                 }

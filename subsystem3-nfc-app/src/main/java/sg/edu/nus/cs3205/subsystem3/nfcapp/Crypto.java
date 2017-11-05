@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.ByteBuffer;
+import java.security.GeneralSecurityException;
 import java.util.Arrays;
 import java.util.Base64;
 
@@ -30,7 +31,7 @@ public class Crypto {
         }
     }
 
-    public static String decrypt(final String encryptedData) throws Exception {
+    public static String decrypt(final String encryptedData) throws GeneralSecurityException {
         System.out.println("enc: " + encryptedData);
         final byte[] iv = new byte[IV_SIZE];
         final byte[] t1 = Base64.getDecoder().decode(encryptedData);
