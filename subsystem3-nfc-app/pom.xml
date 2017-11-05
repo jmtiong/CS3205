@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>sg.edu.nus.cs3205</groupId>
 		<artifactId>subsystem3</artifactId>
-		<version>1.0-a01</version>
+		<version>1.0</version>
 		<relativePath>..</relativePath>
 	</parent>
 	<artifactId>subsystem3-nfc-app</artifactId>

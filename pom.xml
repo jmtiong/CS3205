@@ -5,7 +5,7 @@
 
 	<groupId>sg.edu.nus.cs3205</groupId>
 	<artifactId>subsystem3</artifactId>
-	<version>1.0-a01</version>
+	<version>1.0</version>
 	<packaging>pom</packaging>
 	<name>subsystem3</name>
 	<url>https://cs3205-3.comp.nus.edu.sg</url>
