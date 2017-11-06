@@ -87,7 +87,8 @@ public class Session implements ISession {
             final InputStream requestStream) {
         Response response = ResourceServerConnector.postSession(this.claim.userId, type, timestamp,
                 nfcResponse, requestStream);
-        if (response.getStatusInfo() != Response.Status.CREATED) {
+        if (response.getStatusInfo().getFamily() == Response.Status.Family.SUCCESSFUL
+                && response.getStatusInfo() != Response.Status.CREATED) {
             response = Response.fromResponse(response).status(Response.Status.CREATED).build();
         }
         return wrapJWTRefresh(response);

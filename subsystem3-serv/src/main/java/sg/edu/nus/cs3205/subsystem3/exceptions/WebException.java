@@ -1,5 +1,8 @@
 package sg.edu.nus.cs3205.subsystem3.exceptions;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -11,12 +14,15 @@ import sg.edu.nus.cs3205.subsystem3.util.HttpHeaders;
 public class WebException extends WebApplicationException {
     private static final long serialVersionUID = -3081261969780084208L;
 
+    private static Logger LOGGER = Logger.getLogger(WebException.class.getName());
+
     public WebException() {
         super();
     }
 
     public WebException(final Throwable cause) {
         super(cause);
+        LOGGER.log(Level.SEVERE, "Fatal Error", cause);
     }
 
     public WebException(final Throwable cause, final Response response) {
